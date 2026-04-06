@@ -1,0 +1,989 @@
+/* ============================================================
+   JIGSAW — Vanilla CSS
+   Pastel toy-themed neo-brutalist landing page
+   ============================================================ */
+
+/* === BASE STYLES === */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  background: #ffffff;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: #111827;
+}
+
+h1, h2, h3, h4 {
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+}
+
+#app {
+  background: #ffffff;
+}
+
+/* ============================================================
+   KEYFRAME ANIMATIONS
+   ============================================================ */
+
+@keyframes jigsaw-float1 {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50%       { transform: translateY(-20px) rotate(5deg); }
+}
+
+@keyframes jigsaw-float2 {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50%       { transform: translateY(30px) rotate(-10deg); }
+}
+
+@keyframes jigsaw-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes jigsaw-bounce {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-8px); }
+}
+
+@keyframes jigsaw-fadein-up {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0px); }
+}
+
+/* ============================================================
+   SCROLL REVEAL
+   ============================================================ */
+
+.j-reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.j-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.j-reveal.delay-1 { transition-delay: 0.10s; }
+.j-reveal.delay-2 { transition-delay: 0.20s; }
+.j-reveal.delay-3 { transition-delay: 0.30s; }
+.j-reveal.delay-4 { transition-delay: 0.40s; }
+
+/* ============================================================
+   PUZZLE SVG HELPER
+   ============================================================ */
+
+.j-puzzle-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  display: block;
+}
+
+/* ============================================================
+   SECTION: HERO
+   ============================================================ */
+
+.j-hero {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #ffffba 0%, #ffdfba 50%, #ffb3ba 100%);
+  padding: 80px 24px;
+}
+
+@media (min-width: 768px) {
+  .j-hero { padding: 128px 24px; }
+}
+
+.j-hero-floater {
+  position: absolute;
+  opacity: 0.55;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+.j-hero-floater-1 {
+  top: 40px;
+  left: 40px;
+  width: 192px;
+  height: 192px;
+  animation: jigsaw-float1 5s ease-in-out infinite;
+}
+
+.j-hero-floater-2 {
+  bottom: 40px;
+  right: 40px;
+  width: 256px;
+  height: 256px;
+  animation: jigsaw-float2 7s ease-in-out 1s infinite;
+}
+
+.j-hero-content {
+  position: relative;
+  z-index: 10;
+  max-width: 1152px;
+  margin: 0 auto;
+  text-align: center;
+  animation: jigsaw-fadein-up 0.7s ease both;
+}
+
+.j-hero-title-wrap {
+  display: inline-block;
+  position: relative;
+  margin-bottom: 16px;
+}
+
+.j-hero-title {
+  font-size: clamp(4rem, 13vw, 8rem);
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  color: #111827;
+  position: relative;
+  z-index: 10;
+  filter: drop-shadow(4px 4px 0px rgba(17,24,39,0.18));
+  margin: 0;
+}
+
+.j-hero-spinner {
+  position: absolute;
+  top: -24px;
+  right: -52px;
+  width: 88px;
+  height: 88px;
+  animation: jigsaw-spin 20s linear infinite;
+  opacity: 0.85;
+}
+
+.j-hero-subtitle {
+  font-size: clamp(1.1rem, 3vw, 1.6rem);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: #1f2937;
+  margin: 0 auto 36px;
+  max-width: 600px;
+}
+
+.j-hero-ctas {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+@media (min-width: 560px) {
+  .j-hero-ctas {
+    flex-direction: row;
+    justify-content: center;
+  }
+}
+
+.j-btn {
+  display: inline-block;
+  text-decoration: none;
+  font-family: inherit;
+  font-weight: 900;
+  cursor: pointer;
+  border-radius: 12px;
+  border: 4px solid #111827;
+  transition: transform 0.2s, box-shadow 0.2s;
+  line-height: 1;
+}
+
+.j-btn:active {
+  transform: translateY(2px) !important;
+  box-shadow: 0 0 0 0 #111827 !important;
+}
+
+.j-btn-primary {
+  padding: 20px 48px;
+  font-size: 1.15rem;
+  background: #bae1ff;
+  color: #111827;
+  box-shadow: 8px 8px 0 0 #111827;
+}
+
+.j-btn-primary:hover {
+  transform: translateY(-4px);
+  box-shadow: 12px 12px 0 0 #111827;
+}
+
+.j-btn-secondary {
+  padding: 20px 32px;
+  font-size: 1rem;
+  background: white;
+  color: #111827;
+  box-shadow: 8px 8px 0 0 #111827;
+}
+
+.j-btn-secondary:hover {
+  transform: translateY(-4px);
+  box-shadow: 12px 12px 0 0 #111827;
+}
+
+/* ============================================================
+   SECTION HEADER (shared)
+   ============================================================ */
+
+.j-section-header {
+  text-align: center;
+  margin-bottom: 80px;
+}
+
+.j-section-title {
+  font-size: clamp(2.4rem, 6vw, 4.5rem);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.04em;
+  color: #111827;
+  margin: 0 0 12px;
+}
+
+.j-section-subtitle {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #4b5563;
+  margin: 0;
+}
+
+/* ============================================================
+   SECTION: PUZZLE PRINCIPLES
+   ============================================================ */
+
+.j-principles {
+  position: relative;
+  background: #f8f9fa;
+  padding: 128px 24px;
+  border-top: 8px solid #111827;
+  border-bottom: 8px solid #111827;
+  overflow: hidden;
+}
+
+.j-dot-bg {
+  position: absolute;
+  inset: 0;
+  opacity: 0.05;
+  background-image: radial-gradient(circle at 2px 2px, black 1px, transparent 0);
+  background-size: 32px 32px;
+  pointer-events: none;
+}
+
+.j-principles-decor {
+  position: absolute;
+  left: -48px;
+  top: 48px;
+  width: 260px;
+  height: 260px;
+  opacity: 0.18;
+  transform: rotate(45deg);
+  pointer-events: none;
+}
+
+.j-principles-inner {
+  max-width: 1152px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.j-principles-grid {
+  display: grid;
+  gap: 32px;
+}
+
+@media (min-width: 768px) {
+  .j-principles-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+  }
+}
+
+.j-principle-card {
+  position: relative;
+  height: 380px;
+  cursor: default;
+  transition: transform 0.3s;
+}
+
+.j-principles-grid > div:nth-child(1) .j-principle-card { transform: rotate(-2deg); }
+.j-principles-grid > div:nth-child(1) .j-principle-card:hover { transform: rotate(-2deg) translateY(-10px) scale(1.02); }
+.j-principles-grid > div:nth-child(2) .j-principle-card { transform: rotate(3deg) translateY(20px); }
+.j-principles-grid > div:nth-child(2) .j-principle-card:hover { transform: rotate(3deg) translateY(10px) scale(1.02); }
+.j-principles-grid > div:nth-child(3) .j-principle-card { transform: rotate(-1deg) translateY(10px); }
+.j-principles-grid > div:nth-child(3) .j-principle-card:hover { transform: rotate(-1deg) translateY(0px) scale(1.02); }
+
+.j-principle-body {
+  position: relative;
+  z-index: 10;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  text-align: center;
+  gap: 20px;
+}
+
+.j-icon-wrap {
+  display: flex;
+  width: 96px;
+  height: 96px;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border-radius: 16px;
+  border: 4px solid #111827;
+  box-shadow: 4px 4px 0 0 #111827;
+  flex-shrink: 0;
+  transition: box-shadow 0.2s;
+}
+
+.j-principle-card:hover .j-icon-wrap {
+  box-shadow: 6px 6px 0 0 #111827;
+}
+
+.j-icon-wrap svg {
+  width: 48px;
+  height: 48px;
+  color: #111827;
+}
+
+.j-principle-name {
+  font-size: 2.2rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #111827;
+  margin: 0;
+}
+
+.j-principle-desc {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1f2937;
+  background: rgba(255,255,255,0.55);
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: 2px solid rgba(17,24,39,0.1);
+  margin: 0;
+}
+
+/* ============================================================
+   SECTION: EXAMPLE PUZZLES
+   ============================================================ */
+
+.j-examples {
+  position: relative;
+  background: white;
+  padding: 128px 24px;
+  border-bottom: 8px solid #111827;
+  overflow: hidden;
+}
+
+.j-examples-decor {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 384px;
+  height: 384px;
+  opacity: 0.08;
+  transform: rotate(12deg);
+  transform-origin: top right;
+  pointer-events: none;
+}
+
+.j-examples-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.j-examples-grid {
+  display: grid;
+  gap: 32px;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 600px) {
+  .j-examples-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (min-width: 1024px) {
+  .j-examples-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+.j-example-card {
+  position: relative;
+  background: white;
+  border-radius: 24px;
+  border: 4px solid #111827;
+  box-shadow: 6px 6px 0 0 #111827;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.j-examples-grid > div:nth-child(1) .j-example-card { transform: rotate(-3deg); }
+.j-examples-grid > div:nth-child(1) .j-example-card:hover { transform: rotate(-3deg) translateY(-12px); box-shadow: 12px 12px 0 0 #111827; }
+.j-examples-grid > div:nth-child(2) .j-example-card { transform: rotate(2deg); }
+.j-examples-grid > div:nth-child(2) .j-example-card:hover { transform: rotate(2deg) translateY(-12px); box-shadow: 12px 12px 0 0 #111827; }
+.j-examples-grid > div:nth-child(3) .j-example-card { transform: rotate(-1deg); }
+.j-examples-grid > div:nth-child(3) .j-example-card:hover { transform: rotate(-1deg) translateY(-12px); box-shadow: 12px 12px 0 0 #111827; }
+.j-examples-grid > div:nth-child(4) .j-example-card { transform: rotate(3deg); }
+.j-examples-grid > div:nth-child(4) .j-example-card:hover { transform: rotate(3deg) translateY(-12px); box-shadow: 12px 12px 0 0 #111827; }
+
+.j-example-thumb {
+  position: relative;
+  height: 224px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8f9fa;
+  border-bottom: 4px solid #111827;
+}
+
+.j-example-piece-wrap {
+  position: relative;
+  width: 160px;
+  height: 160px;
+}
+
+.j-example-icon-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.j-example-icon-box {
+  background: rgba(255,255,255,0.4);
+  backdrop-filter: blur(4px);
+  padding: 16px;
+  border-radius: 12px;
+  border: 2px solid #111827;
+  transition: transform 0.3s, background 0.3s;
+}
+
+.j-example-card:hover .j-example-icon-box {
+  transform: scale(1.12);
+  background: rgba(255,255,255,0.9);
+}
+
+.j-example-icon-box svg {
+  width: 40px;
+  height: 40px;
+  color: #111827;
+  display: block;
+}
+
+.j-example-body {
+  padding: 28px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.j-genre-tag {
+  display: inline-block;
+  align-self: flex-start;
+  margin-bottom: 14px;
+  border-radius: 100px;
+  border: 2px solid #111827;
+  padding: 4px 14px;
+  font-size: 0.7rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #111827;
+  box-shadow: 2px 2px 0 0 #111827;
+}
+
+.j-example-title {
+  font-size: 1.6rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.03em;
+  color: #111827;
+  margin: 0 0 6px;
+  transition: text-decoration 0.1s;
+}
+
+.j-example-card:hover .j-example-title {
+  text-decoration: underline;
+  text-decoration-thickness: 4px;
+  text-underline-offset: 4px;
+}
+
+.j-example-author {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #6b7280;
+  margin: auto 0 0;
+}
+
+/* ============================================================
+   SECTION: ARCADE TEASER
+   ============================================================ */
+
+.j-arcade {
+  position: relative;
+  background: #111827;
+  padding: 160px 24px;
+  border-bottom: 8px solid #000;
+  overflow: hidden;
+}
+
+.j-arcade-dot-bg {
+  position: absolute;
+  inset: 0;
+  opacity: 0.1;
+  background-image: radial-gradient(circle at 4px 4px, white 2px, transparent 0);
+  background-size: 48px 48px;
+  pointer-events: none;
+}
+
+.j-arcade-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.j-arcade-header {
+  text-align: center;
+  margin-bottom: 128px;
+}
+
+.j-arcade-title {
+  font-size: clamp(2.8rem, 8vw, 5.5rem);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.05em;
+  color: white;
+  margin: 0 0 16px;
+  filter: drop-shadow(4px 4px 0 #bae1ff);
+}
+
+.j-arcade-subtitle {
+  display: inline-block;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #d1d5db;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  background: rgba(31,41,55,0.8);
+  padding: 8px 24px;
+  border-radius: 12px;
+  border: 2px solid #374151;
+}
+
+.j-arcade-stage {
+  position: relative;
+  height: 600px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.j-arcade-backdrop {
+  position: absolute;
+  inset: 0;
+  border-radius: 24px;
+  background: rgba(255,255,255,0.04);
+  border: 4px solid rgba(255,255,255,0.08);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 48px;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+
+.j-arcade-backdrop.assembled {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.j-arcade-cta {
+  display: inline-block;
+  text-decoration: none;
+  padding: 24px 48px;
+  background: #ffb3ba;
+  color: #111827;
+  border: 4px solid #111827;
+  border-radius: 16px;
+  font-size: 1.75rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  box-shadow: 8px 8px 0 0 rgba(255,255,255,0.2);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.j-arcade-cta:hover {
+  transform: translateY(-5px) scale(1.04);
+  box-shadow: 12px 12px 0 0 rgba(255,255,255,0.25);
+}
+
+.j-arcade-pieces {
+  position: relative;
+  z-index: 10;
+  width: 0;
+  height: 0;
+}
+
+.j-arcade-piece {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 140px;
+  height: 140px;
+  margin-left: -70px;
+  margin-top: -70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.j-arcade-piece-icon {
+  position: relative;
+  z-index: 10;
+  padding: 16px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.28);
+  backdrop-filter: blur(8px);
+  border: 2px solid rgba(17,24,39,0.45);
+}
+
+.j-arcade-piece-icon svg {
+  width: 48px;
+  height: 48px;
+  color: #111827;
+  display: block;
+}
+
+.j-arcade-scroll-hint {
+  text-align: center;
+  margin-top: 48px;
+  transition: opacity 0.4s;
+}
+
+.j-arcade-scroll-hint p {
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: #9ca3af;
+  animation: jigsaw-bounce 1.5s ease-in-out infinite;
+  margin: 0;
+}
+
+/* ============================================================
+   SECTION: CREATOR NOTE (yellow card)
+   ============================================================ */
+
+.j-creator {
+  background: #f8f9fa;
+  padding: 80px 24px;
+  border-bottom: 8px solid #111827;
+  overflow: hidden;
+  position: relative;
+}
+
+.j-creator-inner {
+  max-width: 1152px;
+  margin: 0 auto;
+}
+
+.j-creator-card {
+  background: #ffffba;
+  border: 4px solid #111827;
+  border-radius: 24px;
+  padding: 48px;
+  box-shadow: 12px 12px 0 0 #111827;
+  position: relative;
+  overflow: hidden;
+  transform: rotate(1deg);
+}
+
+@media (min-width: 768px) {
+  .j-creator-card { padding: 64px; }
+}
+
+.j-creator-card-decor {
+  position: absolute;
+  bottom: -80px;
+  left: -80px;
+  width: 320px;
+  height: 320px;
+  opacity: 0.28;
+  pointer-events: none;
+}
+
+.j-creator-body {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  align-items: center;
+}
+
+@media (min-width: 768px) {
+  .j-creator-body {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+}
+
+.j-creator-text {
+  flex: 1;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .j-creator-text { text-align: left; }
+}
+
+.j-creator-title {
+  font-size: 2rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.03em;
+  color: #111827;
+  margin: 0 0 16px;
+  filter: drop-shadow(2px 2px 0 white);
+}
+
+.j-creator-desc {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1f2937;
+  background: rgba(255,255,255,0.6);
+  padding: 14px;
+  border-radius: 12px;
+  border: 2px solid rgba(17,24,39,0.1);
+  display: inline-block;
+  margin: 0;
+}
+
+.j-creator-btn {
+  display: inline-block;
+  text-decoration: none;
+  flex-shrink: 0;
+  background: #ffb3ba;
+  color: #111827;
+  border: 4px solid #111827;
+  border-radius: 16px;
+  padding: 24px 40px;
+  font-size: 1.35rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  box-shadow: 6px 6px 0 0 #111827;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.j-creator-btn:hover {
+  transform: translateY(-8px);
+  box-shadow: 10px 10px 0 0 #111827;
+}
+
+.j-creator-btn:active {
+  transform: translateY(0);
+  box-shadow: 2px 2px 0 0 #111827;
+}
+
+.j-code-block {
+  margin-top: 48px;
+  border-radius: 16px;
+  border: 4px solid #111827;
+  background: #111827;
+  padding: 32px;
+  position: relative;
+  z-index: 10;
+}
+
+.j-code-dots {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.j-code-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+}
+
+.j-code-content {
+  font-family: 'Courier New', 'Fira Code', monospace;
+  font-size: 1rem;
+  color: #f3f4f6;
+  font-weight: 700;
+  line-height: 1.9;
+}
+
+.j-code-comment { color: #6b7280; }
+.j-code-keyword { color: #baffc9; }
+.j-code-fn     { color: #f9fafb; }
+.j-code-prop   { color: #bae1ff; }
+.j-code-str    { color: #ffb3ba; }
+
+/* ============================================================
+   SECTION: FAQ
+   ============================================================ */
+
+.j-faq {
+  background: white;
+  padding: 80px 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.j-faq-decor {
+  position: absolute;
+  top: 80px;
+  left: 80px;
+  width: 192px;
+  height: 192px;
+  opacity: 0.18;
+  transform: rotate(-12deg);
+  pointer-events: none;
+}
+
+.j-faq-inner {
+  max-width: 768px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.j-faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.j-faq-item {
+  overflow: hidden;
+  border-radius: 16px;
+  border: 3px solid #111827;
+  background: white;
+  box-shadow: 6px 6px 0 0 #111827;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.j-faq-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 8px 8px 0 0 #111827;
+}
+
+.j-faq-btn {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+
+.j-faq-btn-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.j-faq-piece-icon {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.j-faq-piece-icon-label {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 1.1rem;
+  color: #111827;
+  pointer-events: none;
+}
+
+.j-faq-question {
+  font-size: 0.95rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  color: #111827;
+  padding-right: 12px;
+  margin: 0;
+}
+
+.j-faq-chevron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid #111827;
+  background: #f3f4f6;
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+
+.j-faq-item.is-open .j-faq-chevron {
+  transform: rotate(180deg);
+}
+
+.j-faq-chevron svg {
+  width: 18px;
+  height: 18px;
+  color: #111827;
+}
+
+.j-faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s ease;
+}
+
+.j-faq-item.is-open .j-faq-answer {
+  max-height: 400px;
+}
+
+.j-faq-answer-inner {
+  border-top: 2px solid #111827;
+  padding: 20px;
+  background: #f8f9fa;
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.7;
+  color: #374151;
+}
