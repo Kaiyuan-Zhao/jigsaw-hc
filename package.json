@@ -1,15 +1,10 @@
 {
-  "name": "jigsaw-site",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview"
-  },
-  "devDependencies": {
-    "typescript": "~5.9.3",
-    "vite": "^8.0.1"
-  }
+	"name": "jigsaw-hc2",
+	"private": true,
+	"version": "1.0.0",
+	"scripts": {
+		"dev:web": "npm run dev --prefix frontend",
+		"dev:api": "npm run dev --prefix backend",
+		"build:web": "npm run build --prefix frontend"
+	}
 }

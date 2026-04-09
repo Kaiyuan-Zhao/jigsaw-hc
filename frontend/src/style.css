@@ -1,0 +1,1558 @@
+/* === BASE STYLES === */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  background: #ffffff;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: #111827;
+}
+
+.j-site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(8px);
+  background: color-mix(in oklab, white 88%, transparent);
+  border-bottom: 3px solid #111827;
+}
+
+.j-site-header-inner {
+  max-width: 1152px;
+  margin: 0 auto;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.j-site-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.j-site-header-nav {
+  display: none;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (min-width: 640px) {
+  .j-site-header-nav {
+    display: flex;
+  }
+}
+
+.j-site-nav-link {
+  text-decoration: none;
+  color: #111827;
+  border: 3px solid #111827;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-weight: 800;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.j-site-nav-link:hover {
+  border-style: dashed;
+}
+
+html.j-docs-page #app {
+  background: #f3f4f6;
+}
+
+.j-site-logo {
+  text-decoration: none;
+  color: #111827;
+  font-weight: 900;
+  font-size: 1.5rem;
+  letter-spacing: -0.03em;
+}
+
+.j-site-signup {
+  text-decoration: none;
+  color: #111827;
+  background: #fff;
+  border: 3px solid #111827;
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-weight: 800;
+  transition: all 0.2s ease;
+}
+
+.j-site-signup:hover {
+  transform: translateY(-1px);
+  border-style: dashed;
+}
+
+.j-site-auth {
+  display: flex;
+  align-items: center;
+}
+
+.j-site-user-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.j-site-user {
+  color: #111827;
+  background: #fff;
+  border: 2px solid #111827;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-weight: 700;
+  max-width: 240px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.j-site-logout {
+  border: 3px solid #111827;
+  border-radius: 999px;
+  background: #fff;
+  color: #111827;
+  padding: 8px 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.j-site-logout:hover {
+  border-style: dashed;
+}
+
+.j-site-logout:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.j-site-coin-pill {
+  color: #111827;
+  background: #fff;
+  border: 2px solid #111827;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-weight: 800;
+}
+
+.j-site-admin-pill {
+  color: #fff;
+  background: #111827;
+  border: 2px solid #111827;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-weight: 800;
+}
+
+.j-site-page-root {
+  position: relative;
+}
+
+h1, h2, h3, h4 {
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+}
+
+#app {
+  background: linear-gradient(135deg, #ffffba 0%, #ffdfba 50%, #ffb3ba 100%);
+  /* background: #ffffff; */
+}
+
+/* ============================================================
+   KEYFRAME ANIMATIONS
+   ============================================================ */
+
+@keyframes jigsaw-float1 {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50%       { transform: translateY(-20px) rotate(5deg); }
+}
+
+@keyframes jigsaw-float2 {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50%       { transform: translateY(30px) rotate(-10deg); }
+}
+
+@keyframes jigsaw-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ============================================================
+   PUZZLE SVG HELPER
+   ============================================================ */
+
+.j-puzzle-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  display: block;
+}
+
+/* ============================================================
+   SHARED PUZZLE BORDER UTILITY
+   ============================================================ */
+.j-puzzle-border {
+  position: relative;
+  overflow: visible;
+}
+
+.j-puzzle-border::before {
+  content: "";
+  position: absolute;
+  bottom: 0; 
+  left: 0;
+  width: 100%;
+  height: 8px;
+  background: 
+    linear-gradient(#111827, #111827) left center / calc(50% - 24px) 8px no-repeat,
+    linear-gradient(#111827, #111827) right center / calc(50% - 24px) 8px no-repeat;
+  z-index: 20;
+}
+
+.j-puzzle-border::after {
+  content: "";
+  position: absolute;
+  bottom: -32px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 64px;
+  height: 32px;
+  border: 8px solid #111827;
+  border-top: none;
+  border-radius: 0 0 32px 32px;
+  box-sizing: border-box;
+  pointer-events: none;
+  z-index: 20;
+}
+
+/* ============================================================
+   SECTION: HERO
+   ============================================================ */
+
+.j-hero {
+  position: relative;
+  overflow: visible;
+  /* background: linear-gradient(135deg, #ffffba 0%, #ffdfba 50%, #ffb3ba 100%); */
+  background: transparent;
+  padding: 80px 24px;
+}
+
+@media (min-width: 768px) {
+  .j-hero { padding: 128px 24px; }
+}
+
+.j-hero-floater {
+  position: absolute;
+  opacity: 0.55;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+.j-hero-floater-1 {
+  top: 40px;
+  left: 40px;
+  width: 192px;
+  height: 192px;
+  animation: jigsaw-float1 5s ease-in-out infinite;
+}
+
+.j-hero-floater-2 {
+  bottom: 40px;
+  right: 40px;
+  width: 256px;
+  height: 256px;
+  animation: jigsaw-float2 7s ease-in-out 1s infinite;
+}
+
+.j-hero-floater-3 {
+  top: 140px;
+  right: 16%;
+  width: 120px;
+  height: 120px;
+  opacity: 0.4;
+  animation: jigsaw-float1 6s ease-in-out 0.4s infinite;
+}
+
+.j-hero-floater-4 {
+  bottom: 120px;
+  left: 18%;
+  width: 88px;
+  height: 88px;
+  opacity: 0.5;
+  animation: jigsaw-spin 18s linear infinite;
+}
+
+.j-hero-content {
+  position: relative;
+  z-index: 10;
+  max-width: 1152px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.j-hero-title-wrap {
+  display: inline-block;
+  position: relative;
+  margin-bottom: 16px;
+}
+
+.j-hero-title {
+  font-size: clamp(4rem, 13vw, 8rem);
+  font-weight: 900;
+  color: #111827;
+  position: relative;
+  z-index: 10;
+  margin: 0;
+}
+
+.j-hero-spinner {
+  position: absolute;
+  top: -24px;
+  right: -52px;
+  width: 88px;
+  height: 88px;
+  animation: jigsaw-spin 20s linear infinite;
+  opacity: 0.85;
+}
+
+.j-hero-subtitle {
+  font-size: clamp(1.1rem, 3vw, 1.6rem);
+  font-weight: 900;
+  color: #1f2937;
+  margin: 0 auto 36px;
+}
+
+/* ============================================================
+   SECTION HEADER (shared)
+   ============================================================ */
+
+.j-section-header {
+  text-align: center;
+  margin-bottom: 80px;
+}
+
+.j-section-title {
+  font-size: clamp(2.4rem, 6vw, 4.5rem);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.04em;
+  color: #111827;
+  margin: 0 0 12px;
+}
+
+.j-section-subtitle {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #4b5563;
+  margin: 0;
+}
+
+/* ============================================================
+   SECTION: PUZZLE PRINCIPLES
+   ============================================================ */
+
+.j-principles {
+  position: relative;
+  background: transparent;
+  padding: 128px 24px;
+  overflow: visible;
+}
+
+.j-dot-bg {
+  position: absolute;
+  inset: 0;
+  opacity: 0.1;
+  background-image: radial-gradient(circle at 4px 4px, black 2px, transparent 0);
+  background-size: 48px 48px;
+  pointer-events: none;
+}
+
+.j-principles-decor {
+  position: absolute;
+  left: -48px;
+  top: 48px;
+  width: 260px;
+  height: 260px;
+  opacity: 0.18;
+  transform: rotate(45deg);
+  pointer-events: none;
+}
+
+.j-principles-floater {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0.35;
+  mix-blend-mode: multiply;
+}
+
+.j-principles-floater-1 {
+  top: 68px;
+  right: 54px;
+  width: 92px;
+  height: 92px;
+  animation: jigsaw-spin 16s linear infinite;
+}
+
+.j-principles-floater-2 {
+  bottom: 180px;
+  left: 64px;
+  width: 104px;
+  height: 104px;
+  animation: jigsaw-float2 7.5s ease-in-out infinite;
+}
+
+.j-principles-inner {
+  max-width: 1152px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.j-principles-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 0;
+  max-width: 800px;
+  margin: 0 auto;
+  aspect-ratio: 1;
+}
+
+.j-principles-grid > .j-arcade-scroll-piece {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+.j-principle-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  cursor: default;
+  transition: transform 0.3s;
+}
+
+.j-principle-card:hover {
+  transform: scale(1.02);
+  z-index: 20;
+}
+
+.j-principle-body {
+  position: relative;
+  z-index: 10;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  text-align: center;
+  gap: 8px;
+}
+
+@media (min-width: 560px) {
+  .j-principle-body {
+    padding: 32px;
+    gap: 20px;
+  }
+}
+
+.j-arcade-coins-panel,
+.j-arcade-admin-panel {
+  border: 3px solid #111827;
+  border-radius: 24px;
+  background: #fff;
+  padding: 18px;
+  margin: 0 auto 20px;
+  max-width: 980px;
+}
+
+.j-arcade-coins-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.j-arcade-coins-title,
+.j-arcade-admin-title {
+  margin: 0;
+  font-size: 1.15rem;
+  color: #111827;
+}
+
+.j-arcade-coins-user {
+  margin: 0;
+  font-weight: 700;
+  color: #4b5563;
+}
+
+.j-arcade-coins-value {
+  font-size: 1.9rem;
+  font-weight: 900;
+  color: #111827;
+}
+
+.j-arcade-coin-test-controls {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.j-coin-test-btn {
+  border: 3px solid #111827;
+  border-radius: 999px;
+  background: #fff;
+  color: #111827;
+  padding: 8px 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.j-coin-test-btn:hover {
+  border-style: dashed;
+}
+
+.j-coin-test-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.j-arcade-coin-test-status {
+  margin: 8px 0 0;
+  min-height: 20px;
+  font-weight: 700;
+}
+
+.j-arcade-coin-test-status.is-error {
+  color: #b91c1c;
+}
+
+.j-arcade-coin-test-status.is-success {
+  color: #166534;
+}
+
+.j-admin-grant-form {
+  margin-top: 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.j-admin-grant-label {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #374151;
+}
+
+.j-admin-grant-input {
+  width: 100%;
+  border: 2px solid #111827;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 0.95rem;
+  background: #fff;
+}
+
+.j-admin-grant-input:focus {
+  outline: none;
+  border-style: dashed;
+}
+
+.j-admin-grant-submit {
+  border: 3px solid #111827;
+  border-radius: 999px;
+  background: #111827;
+  color: #fff;
+  padding: 10px 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.j-admin-grant-submit:hover {
+  border-style: dashed;
+}
+
+.j-admin-grant-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.j-admin-grant-status {
+  margin: 4px 0 0;
+  min-height: 20px;
+  font-weight: 700;
+}
+
+.j-admin-grant-status.is-error {
+  color: #b91c1c;
+}
+
+.j-admin-grant-status.is-success {
+  color: #166534;
+}
+
+.j-icon-wrap {
+  display: flex;
+  width: 56px;
+  height: 56px;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border-radius: 12px;
+  border: 3px solid #111827;
+  box-shadow: 3px 3px 0 0 #111827;
+  flex-shrink: 0;
+}
+@media (min-width: 560px) {
+  .j-icon-wrap {
+    width: 96px;
+    height: 96px;
+    border-radius: 16px;
+    border: 4px solid #111827;
+    box-shadow: 4px 4px 0 0 #111827;
+  }
+}
+
+.j-principle-card:hover .j-icon-wrap {
+  box-shadow: 6px 6px 0 0 #111827;
+}
+
+.j-icon-wrap svg {
+  width: 24px;
+  height: 24px;
+  color: #111827;
+}
+@media (min-width: 560px) {
+  .j-icon-wrap svg {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+.j-principle-name {
+  font-size: 1.2rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #111827;
+  margin: 0;
+}
+@media (min-width: 560px) {
+  .j-principle-name {
+    font-size: 2.2rem;
+  }
+}
+
+.j-principle-desc {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1f2937;
+  background: rgba(255,255,255,0.55);
+  padding: 4px 8px;
+  border-radius: 10px;
+  border: 2px solid rgba(17,24,39,0.1);
+  margin: 0;
+}
+@media (min-width: 560px) {
+  .j-principle-desc {
+    font-size: 1.1rem;
+    padding: 8px 16px;
+  }
+}
+
+
+
+.j-arcade-title {
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.03em;
+  color: #111827;
+  margin: 40px 0 10px;
+  text-align: center;
+  filter: drop-shadow(2px 2px 0 #bae1ff);
+}
+
+.j-arcade-subtitle {
+  display: block;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1f2937;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  background: rgba(255,255,255,0.58);
+  padding: 8px 16px;
+  border-radius: 12px;
+  border: 2px solid rgba(17,24,39,0.25);
+  width: fit-content;
+  margin: 0 auto;
+}
+
+
+.j-arcade-cta {
+  display: block;
+  text-decoration: none;
+  margin-top: 20px;
+  margin-left: auto;
+  margin-right: auto;
+  width: fit-content;
+  padding: 24px 48px;
+  background: #ffb3ba;
+  color: #111827;
+  border: 4px solid #111827;
+  border-radius: 16px;
+  font-size: 1.75rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  transition: transform 0.2s;
+}
+
+.j-arcade-cta:hover {
+  transform: translateY(-5px) scale(1.04);
+  box-shadow: 12px 12px 0 0 rgba(255,255,255,0.25);
+}
+
+/* ============================================================
+   SECTION: CREATOR NOTE (yellow card)
+   ============================================================ */
+
+.j-creator {
+  background: transparent;
+  padding: 80px 24px;
+  overflow: visible;
+  transform: none;
+  position: relative;
+}
+
+.j-creator-floater {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0.33;
+  mix-blend-mode: multiply;
+}
+
+.j-creator-floater-1 {
+  top: 26px;
+  left: 5%;
+  width: 88px;
+  height: 88px;
+  animation: jigsaw-float1 6.5s ease-in-out infinite;
+}
+
+.j-creator-floater-2 {
+  bottom: 44px;
+  right: 8%;
+  width: 110px;
+  height: 110px;
+  animation: jigsaw-spin 14s linear infinite;
+}
+
+.j-creator-card {
+  background: #ffffba;
+  border: 4px solid #111827;
+  border-radius: 24px;
+  padding: 48px;
+  box-shadow: 12px 12px 0 0 #111827;
+  position: relative;
+  overflow: hidden;
+  z-index: 10;
+  transform: rotate(-3deg);
+}
+
+.j-creator-body {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  align-items: center;
+}
+
+@media (min-width: 768px) {
+  .j-creator-body {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+}
+
+.j-creator-text {
+  flex: 1;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .j-creator-text { text-align: left; }
+}
+
+.j-creator-title {
+  font-size: 2rem;
+  text-transform: uppercase;
+  margin: 0 0 16px;
+  filter: drop-shadow(2px 2px 0 white);
+}
+
+.j-creator-desc {
+  font-weight: 500;
+  color: #1f2937;
+  border-radius: 12px;
+  margin: 0;
+}
+
+.j-code-block {
+  margin-top: 48px;
+  border-radius: 16px;
+  border: 4px solid #111827;
+  background: #111827;
+  padding: 32px;
+  position: relative;
+  z-index: 10;
+}
+
+.j-code-dots {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.j-code-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+}
+
+.j-code-content {
+  font-family: 'Courier New', 'Fira Code', monospace;
+  font-size: 1rem;
+  color: #f3f4f6;
+  font-weight: 700;
+  line-height: 1.9;
+}
+
+.j-code-comment { color: #6b7280; }
+.j-code-keyword { color: #baffc9; }
+.j-code-fn     { color: #f9fafb; }
+.j-code-prop   { color: #bae1ff; }
+.j-code-str    { color: #ffb3ba; }
+
+/* ============================================================
+   SECTION: FAQ
+   ============================================================ */
+
+.j-faq {
+  background: transparent;
+  padding: 80px 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.j-faq-decor {
+  position: absolute;
+  top: 80px;
+  left: 80px;
+  width: 192px;
+  height: 192px;
+  opacity: 0.30;
+  transform: rotate(-12deg);
+  pointer-events: none;
+}
+
+.j-faq-floater {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0.28;
+  mix-blend-mode: multiply;
+}
+
+.j-faq-floater-1 {
+  top: 120px;
+  right: 78px;
+  width: 90px;
+  height: 90px;
+  animation: jigsaw-float2 6.8s ease-in-out 0.5s infinite;
+}
+
+.j-faq-floater-2 {
+  bottom: 56px;
+  left: 56px;
+  width: 72px;
+  height: 72px;
+  animation: jigsaw-spin 15s linear infinite;
+}
+
+
+.j-faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.j-faq-item {
+  overflow: hidden;
+  border-radius: 16px;
+  border: 3px solid #111827;
+  background: white;
+}
+
+
+.j-faq-btn {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.j-faq-btn-left {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.j-faq-piece-icon {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.j-faq-piece-icon-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 1.1rem;
+  color: #111827;
+}
+
+.j-faq-question {
+  text-transform: uppercase;
+}
+
+.j-faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.5s ease;
+}
+
+.j-faq-item.is-open .j-faq-answer {
+  max-height: 400px;
+}
+
+.j-faq-answer-inner {
+  padding: 16px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.7;
+  color: #374151;
+}
+
+/* ============================================================
+   PAGE: ARCADE GALLERY
+   ============================================================ */
+
+.j-arcade-gallery-page {
+  min-height: 100vh;
+  padding: 52px 20px 80px;
+}
+
+.j-arcade-gallery-inner {
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.j-arcade-gallery-head {
+  text-align: center;
+  margin-bottom: 38px;
+}
+
+.j-arcade-gallery-title {
+  margin: 0;
+  font-size: clamp(2.4rem, 7.2vw, 5.1rem);
+  text-transform: uppercase;
+  color: #111827;
+}
+
+.j-arcade-gallery-subtitle {
+  width: fit-content;
+  margin: 10px auto 16px;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  font-weight: 800;
+  color: #1f2937;
+  padding: 8px 14px;
+  border: 2px solid rgba(17,24,39,0.24);
+  border-radius: 12px;
+  background: rgba(255,255,255,0.6);
+}
+
+.j-arcade-back-link {
+  display: inline-block;
+  text-decoration: none;
+  color: #111827;
+  border: 3px solid #111827;
+  border-radius: 999px;
+  background: #ffffba;
+  padding: 6px 16px;
+  font-weight: 900;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+}
+
+.j-arcade-gallery-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+@media (min-width: 800px) {
+  .j-arcade-gallery-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 32px;
+    max-width: 1400px;
+  }
+}
+
+.j-arcade-stack {
+  position: relative;
+  width: min(300px, 98%);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.j-arcade-piece {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  width: 100%;
+}
+
+.j-arcade-piece-top {
+  z-index: 2;
+  margin-bottom: -12%; /* Keep interlock visible without covering bottom card content */
+}
+
+.j-arcade-piece-bottom {
+  z-index: 3;
+}
+
+.j-arcade-piece-inner {
+  position: relative;
+  z-index: 5;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.j-arcade-piece-inner-top {
+  padding: 28% 28% 36%;
+}
+
+.j-arcade-piece-inner-bottom {
+  padding: 34% 15% 16%;
+  gap: 8px;
+  z-index: 10;
+  justify-content: flex-start;
+}
+
+.j-arcade-thumb-wrap {
+  position: relative;
+  height: 100%;
+  min-height: 0;
+  border: 3px solid #111827;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.j-arcade-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.j-arcade-thumb-link {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.j-arcade-icon-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 2px solid #111827;
+  background: rgba(255,255,255,0.9);
+  color: #111827;
+  display: grid;
+  place-items: center;
+}
+
+.j-arcade-card-title {
+  margin: 0;
+  color: #111827;
+  text-transform: uppercase;
+  font-size: clamp(0.94rem, 2.2vw, 1.28rem);
+  line-height: 1.05;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.j-arcade-card-desc {
+  margin: 0;
+  color: #1f2937;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  border: 2px solid rgba(17,24,39,0.16);
+  border-radius: 10px;
+  background: rgba(255,255,255,0.6);
+  padding: 6px 9px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.j-arcade-card-footer {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.j-arcade-card-author {
+  color: #1f2937;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.j-like-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 2px solid #111827;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.86);
+  color: #111827;
+  font-size: 0.72rem;
+  font-weight: 900;
+  padding: 5px 9px;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+.j-like-btn:hover {
+  transform: translateY(-2px);
+}
+
+.j-like-btn.is-liked {
+  background: #ffb3ba;
+}
+
+.j-like-btn.is-liked .j-like-icon svg {
+  fill: currentColor;
+}
+
+@media (min-width: 800px) {
+  .j-arcade-stack {
+    width: min(320px, 98%);
+  }
+
+  .j-arcade-piece-top {
+    margin-bottom: -12%;
+  }
+
+  .j-arcade-piece-inner-top {
+    padding: 30% 30% 38%;
+  }
+
+  .j-arcade-piece-inner-bottom {
+    padding: 35% 14% 16%;
+    z-index: 10;
+  }
+
+  .j-arcade-card-desc {
+    -webkit-line-clamp: 3;
+  }
+}
+
+/* ============================================================
+   DOCS (Docusaurus-style layout)
+   ============================================================ */
+
+.j-docs-shell {
+  display: grid;
+  grid-template-columns: 1fr;
+  min-height: calc(100vh - 58px);
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+@media (min-width: 900px) {
+  .j-docs-shell {
+    grid-template-columns: 280px minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+.j-docs-sidebar {
+  position: sticky;
+  top: 58px;
+  z-index: 40;
+  border-bottom: 3px solid #111827;
+  background: color-mix(in oklab, white 92%, transparent);
+  backdrop-filter: blur(8px);
+}
+
+@media (min-width: 900px) {
+  .j-docs-sidebar {
+    top: 58px;
+    align-self: start;
+    max-height: calc(100vh - 58px);
+    overflow-y: auto;
+    border-bottom: none;
+    border-right: 3px solid #111827;
+  }
+}
+
+.j-docs-sidebar-head {
+  padding: 20px 20px 12px;
+}
+
+.j-docs-sidebar-brand {
+  font-size: 1.35rem;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  color: #111827;
+  text-decoration: none;
+}
+
+.j-docs-sidebar-brand:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.j-docs-sidebar-tagline {
+  margin: 4px 0 0;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #6b7280;
+}
+
+.j-docs-side-nav {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  padding: 0 16px 16px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (min-width: 900px) {
+  .j-docs-side-nav {
+    flex-direction: column;
+    padding: 8px 12px 24px;
+    gap: 4px;
+  }
+}
+
+.j-docs-side-link {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 3px solid transparent;
+  text-decoration: none;
+  color: inherit;
+  flex-shrink: 0;
+  min-width: 140px;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+@media (min-width: 900px) {
+  .j-docs-side-link {
+    min-width: 0;
+  }
+}
+
+.j-docs-side-link:hover {
+  border-style: dashed;
+  border-color: #111827;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.j-docs-side-link.is-active {
+  border-color: #111827;
+  background: #fff;
+  box-shadow: 4px 4px 0 0 #111827;
+}
+
+.j-docs-side-label {
+  font-weight: 900;
+  font-size: 0.95rem;
+  color: #111827;
+}
+
+.j-docs-side-meta {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #6b7280;
+  line-height: 1.35;
+}
+
+.j-docs-main-wrap {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 58px);
+}
+
+.j-docs-main {
+  flex: 1;
+  padding: 28px 20px 48px;
+}
+
+@media (min-width: 900px) {
+  .j-docs-main {
+    padding: 40px 48px 64px;
+  }
+}
+
+.j-docs-article {
+  max-width: 52rem;
+  margin: 0 auto;
+}
+
+.j-docs-h1 {
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  margin: 0 0 12px;
+  color: #111827;
+}
+
+.j-docs-lead {
+  font-size: 1.15rem;
+  font-weight: 600;
+  line-height: 1.55;
+  color: #374151;
+  margin: 0 0 32px;
+}
+
+.j-docs-h2 {
+  font-size: 1.35rem;
+  margin: 36px 0 12px;
+  color: #111827;
+  padding-top: 8px;
+  border-top: 2px dashed rgba(17, 24, 39, 0.15);
+}
+
+.j-docs-h2:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+
+.j-docs-h3 {
+  font-size: 1.05rem;
+  margin: 24px 0 10px;
+  color: #1f2937;
+}
+
+.j-docs-p {
+  margin: 0 0 14px;
+  line-height: 1.65;
+  color: #374151;
+  font-weight: 500;
+}
+
+.j-docs-list {
+  margin: 0 0 16px;
+  padding-left: 1.25rem;
+  line-height: 1.65;
+  color: #374151;
+  font-weight: 500;
+}
+
+.j-docs-list-ol {
+  list-style: decimal;
+}
+
+.j-docs-list li {
+  margin-bottom: 8px;
+}
+
+.j-docs-code {
+  font-family: ui-monospace, "Cascadia Code", "Courier New", monospace;
+  font-size: 0.88em;
+  font-weight: 700;
+  background: rgba(17, 24, 39, 0.06);
+  padding: 2px 6px;
+  border-radius: 6px;
+  border: 1px solid rgba(17, 24, 39, 0.12);
+}
+
+.j-docs-pre {
+  margin: 12px 0 20px;
+  padding: 18px 20px;
+  border-radius: 16px;
+  border: 3px solid #111827;
+  background: #111827;
+  overflow-x: auto;
+  box-shadow: 6px 6px 0 0 rgba(17, 24, 39, 0.12);
+}
+
+.j-docs-pre code {
+  font-family: ui-monospace, "Cascadia Code", "Courier New", monospace;
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.65;
+  color: #e5e7eb;
+  white-space: pre;
+}
+
+.j-docs-dl {
+  margin: 0 0 24px;
+}
+
+.j-docs-dl dt {
+  margin-top: 12px;
+  font-weight: 800;
+  color: #111827;
+}
+
+.j-docs-dl dt:first-child {
+  margin-top: 0;
+}
+
+.j-docs-dl dd {
+  margin: 4px 0 0;
+  padding-left: 0;
+  line-height: 1.55;
+  color: #4b5563;
+  font-weight: 500;
+}
+
+.j-docs-cards {
+  display: grid;
+  gap: 16px;
+}
+
+@media (min-width: 640px) {
+  .j-docs-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.j-docs-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 22px;
+  border: 3px solid #111827;
+  border-radius: 20px;
+  background: #fff;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 4px 4px 0 0 #111827;
+}
+
+.j-docs-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 6px 6px 0 0 #111827;
+}
+
+.j-docs-card-title {
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: #111827;
+}
+
+.j-docs-card-desc {
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.45;
+  color: #6b7280;
+}
+
+.j-docs-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 20px 28px;
+  border-top: 3px solid #111827;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+@media (min-width: 900px) {
+  .j-docs-footer {
+    padding: 20px 48px 32px;
+  }
+}
+
+.j-docs-footer-link {
+  font-weight: 800;
+  font-size: 0.9rem;
+  color: #111827;
+  text-decoration: none;
+  border: 3px solid #111827;
+  border-radius: 999px;
+  padding: 8px 16px;
+  transition: all 0.2s ease;
+}
+
+.j-docs-footer-link:hover {
+  border-style: dashed;
+}

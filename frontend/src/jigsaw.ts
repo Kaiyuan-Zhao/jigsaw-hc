@@ -16,13 +16,6 @@ interface PuzzleOpts {
   cls?: string;
 }
 
-/**
- * Build an SVG path for a puzzle piece shape.
- * Tabs protrude OUTWARD from a 0..100 coordinate square.
- * Holes indent INWARD into the square.
- * Flat edges are straight with no protrusion or indentation.
- * Use overflow:visible on the SVG to show protruding tabs.
- */
 function buildPuzzlePath(
   top: EdgeType, right: EdgeType, bottom: EdgeType, left: EdgeType, MID: number): string {
   const TAB  = 25;  // protrusion beyond the square edge
@@ -96,7 +89,7 @@ function puzzleSVG(opts: PuzzleOpts = {}): string {
   return `
 <svg class="${cls}" viewBox="-16 -16 132 132"
      xmlns="http://www.w3.org/2000/svg"
-     style="position:absolute;inset:0;width:100%;height:100%;overflow:visible;display:block;pointer-events:none">
+     style="position:absolute;left:-16%;top:-16%;width:132%;height:132%;overflow:visible;display:block;pointer-events:none">
   <path d="${path}" fill="${fill}"/>
   <path d="${path}" fill="none" stroke="${stroke}" stroke-width="${strokeWidth}"
         stroke-linejoin="round" paint-order="stroke fill"/>
@@ -179,12 +172,18 @@ function puzzleEl(fill: string, notch: Notch, stroke = '#111827', strokeWidth?: 
 
 function buildHero(): HTMLElement {
   return el(`
-<section class="j-hero">
+<section class="j-hero j-puzzle-border">
   <div class="j-hero-floater j-hero-floater-1">
     ${puzzleEl('#bae1ff', { top: 'flat', right: 'tab', bottom: 'tab', left: 'flat' }, 'transparent')}
   </div>
   <div class="j-hero-floater j-hero-floater-2">
     ${puzzleEl('#baffc9', { top: 'hole', right: 'flat', bottom: 'hole', left: 'tab' }, 'transparent')}
+  </div>
+  <div class="j-hero-floater j-hero-floater-3">
+    ${puzzleEl('#ffb3ba', { top: 'tab', right: 'flat', bottom: 'flat', left: 'hole' }, 'transparent')}
+  </div>
+  <div class="j-hero-floater j-hero-floater-4">
+    ${puzzleEl('#ffffba', { top: 'flat', right: 'tab', bottom: 'hole', left: 'flat' }, 'transparent')}
   </div>
 
   <div class="j-hero-content">
@@ -195,14 +194,12 @@ function buildHero(): HTMLElement {
       </div>
     </div>
     <p class="j-hero-subtitle">Ship puzzles, solve puzzles, win puzzles!</p>
-    <div class="j-hero-ctas">
-    </div>
   </div>
 </section>`);
 }
 
 // ============================================================
-// SECTION — EXEMPLARS
+// SECTION — EXPLAINERS
 // ============================================================
 
 interface Principle {
@@ -228,7 +225,7 @@ const PRINCIPLES: Principle[] = [
   {
     icon: 'globe',
     title: 'Solvable',
-    desc: 'Credits solves (see #docs!)',
+    desc: 'Credits solves (see Docs)',
     fill: '#ffb3ba',
     notch: { top: 'flat', right: 'flat', bottom: 'tab', left: 'hole' },
     startX: 420, startY: -160, startRot: 30,
@@ -265,185 +262,34 @@ function buildPrinciples(): HTMLElement {
     </div>`).join('');
 
   return el(`
-<section class="j-principles j-arcade-stage-section">
+<section class="j-principles j-arcade-stage-section j-puzzle-border">
   <div class="j-dot-bg"></div>
   <div class="j-principles-decor">
-    ${puzzleEl('#ffffba', { top: 'tab', right: 'tab', bottom: 'tab', left: 'tab' }, 'transparent')}
+    ${puzzleEl('#FAC898', { top: 'tab', right: 'tab', bottom: 'tab', left: 'tab' }, 'transparent')}
+  </div>
+  <div class="j-principles-floater j-principles-floater-1">
+    ${puzzleEl('#ffdfba', { top: 'hole', right: 'tab', bottom: 'flat', left: 'flat' }, 'transparent')}
+  </div>
+  <div class="j-principles-floater j-principles-floater-2">
+    ${puzzleEl('#baffc9', { top: 'flat', right: 'flat', bottom: 'tab', left: 'hole' }, 'transparent')}
   </div>
   <div class="j-principles-inner">
-    <div class="j-section-header j-reveal">
-      <h2 class="j-section-title" style="filter:drop-shadow(4px 4px 0 #bae1ff)">
+    <div class="j-section-header">
+      <h2 class="j-section-title">
         HOW TO PUZZLE?
       </h2>
-      <p class="j-section-subtitle">Scroll to assemble ↓</p>
     </div>
     
     <div class="j-principles-grid j-arcade-stage">
       ${cards}
     </div>
-    
-    <div class="j-arcade-msg">
-      <h2 class="j-arcade-title">Welcome to the Arcade</h2>
+      <h2 class="j-arcade-title">Check out the Arcade</h2>
       <p class="j-arcade-subtitle">Where all the pieces come together</p>
-      <br><br>
-      <a href="#arcade" class="j-arcade-cta">Enter the Arcade</a>
+      <a href="/arcade" class="j-arcade-cta">Enter the Arcade</a>
     </div>
-  </div>
 </section>`);
 }
 
-// ============================================================
-// SECTION — EXAMPLE PUZZLES
-// ============================================================
-
-interface ExampleCard {
-  title: string;
-  author: string;
-  genre: string;
-  fill: string;
-  icon: IconName;
-  notch: Notch;
-}
-
-const EXAMPLES: ExampleCard[] = [
-  {
-    title: 'Color Cipher',
-    author: 'by @maya_codes',
-    genre: 'Browser puzzle game',
-    fill: '#bae1ff',
-    icon: 'gamepad',
-    notch: { top: 'tab', right: 'tab', bottom: 'flat', left: 'flat' },
-  },
-  {
-    title: 'Hidden Vault',
-    author: 'by @ctf_master',
-    genre: 'CTF-style challenge',
-    fill: '#ffb3ba',
-    icon: 'lock',
-    notch: { top: 'flat', right: 'tab', bottom: 'tab', left: 'flat' },
-  },
-  {
-    title: 'Ghost Protocol',
-    author: 'by @arg_enthusiast',
-    genre: 'ARG-inspired site',
-    fill: '#baffc9',
-    icon: 'ghost',
-    notch: { top: 'tab', right: 'flat', bottom: 'tab', left: 'tab' },
-  },
-  {
-    title: 'Neural Maze',
-    author: 'by @ai_puzzler',
-    genre: 'AI puzzle',
-    fill: '#ffffba',
-    icon: 'cpu',
-    notch: { top: 'tab', right: 'tab', bottom: 'tab', left: 'tab' },
-  },
-];
-
-function buildExamples(): HTMLElement {
-  const cards = EXAMPLES.map((e, i) => `
-    <div class="j-reveal delay-${i + 1}">
-      <div class="j-example-card">
-        <div class="j-example-thumb">
-          <div class="j-example-piece-wrap">
-            ${puzzleEl(e.fill, e.notch)}
-            <div class="j-example-icon-overlay">
-              <div class="j-example-icon-box">${icon(e.icon, 40)}</div>
-            </div>
-          </div>
-        </div>
-        <div class="j-example-body">
-          <span class="j-genre-tag" style="background:${e.fill}">${e.genre}</span>
-          <h3 class="j-example-title">${e.title}</h3>
-          <p class="j-example-author">${e.author}</p>
-        </div>
-      </div>
-    </div>`).join('');
-
-  return el(`
-<section id="examples" class="j-examples">
-  <div class="j-examples-decor">
-    ${puzzleEl('#ffb3ba', { top: 'tab', right: 'tab', bottom: 'tab', left: 'flat' }, 'transparent')}
-  </div>
-  <div class="j-examples-inner">
-    <div class="j-section-header j-reveal">
-      <h2 class="j-section-title" style="filter:drop-shadow(4px 4px 0 #ffdfba)">
-        Example puzzles
-      </h2>
-      <p class="j-section-subtitle">Get inspired by what others have built</p>
-    </div>
-    <div class="j-examples-grid">${cards}</div>
-  </div>
-</section>`);
-}
-
-// ============================================================
-// SECTION — ARCADE TEASER
-// ============================================================
-
-interface ArcadePiece {
-  fill: string;
-  icon: IconName;
-  startX: number; startY: number;
-  endX: number;   endY: number;
-  startRot: number;
-  notch: Notch;
-}
-
-const ARCADE_PIECES: ArcadePiece[] = [
-  // Top-Left — tabs face outward (top + left)
-  {
-    fill: '#bae1ff', icon: 'star',
-    startX: -420, startY: -200, endX: -70, endY: -70, startRot: -45,
-    notch: { top: 'tab', right: 'flat', bottom: 'flat', left: 'tab' },
-  },
-  // Top-Right — tabs face outward (top + right)
-  {
-    fill: '#baffc9', icon: 'zap',
-    startX: 420, startY: -160, endX: 70, endY: -70, startRot: 30,
-    notch: { top: 'tab', right: 'tab', bottom: 'flat', left: 'flat' },
-  },
-  // Bottom-Left — tabs face outward (bottom + left)
-  {
-    fill: '#ffb3ba', icon: 'trophy',
-    startX: -360, startY: 310, endX: -70, endY: 70, startRot: 60,
-    notch: { top: 'flat', right: 'flat', bottom: 'tab', left: 'tab' },
-  },
-  // Bottom-Right — tabs face outward (bottom + right)
-  {
-    fill: '#ffffba', icon: 'target',
-    startX: 320, startY: 260, endX: 70, endY: 70, startRot: -20,
-    notch: { top: 'flat', right: 'tab', bottom: 'tab', left: 'flat' },
-  },
-];
-
-function buildArcade(): HTMLElement {
-  const pieces = ARCADE_PIECES.map((p) => `
-    <div class="j-arcade-piece">
-      ${puzzleEl(p.fill, p.notch)}
-      <div class="j-arcade-piece-icon">${icon(p.icon, 48)}</div>
-    </div>`).join('');
-
-  return el(`
-<section class="j-arcade">
-  <div class="j-arcade-dot-bg"></div>
-  <div class="j-arcade-inner">
-    <div class="j-arcade-header j-reveal">
-      <h2 class="j-arcade-title">Welcome to the Arcade</h2>
-      <p class="j-arcade-subtitle">Where all the pieces come together</p>
-    </div>
-    <div class="j-arcade-stage">
-      <div class="j-arcade-backdrop">
-        <a href="#arcade" class="j-arcade-cta">Enter the Arcade</a>
-      </div>
-      <div class="j-arcade-pieces">${pieces}</div>
-    </div>
-    <div class="j-arcade-scroll-hint">
-      <p>Scroll to snap pieces ↓</p>
-    </div>
-  </div>
-</section>`);
-}
 
 // ============================================================
 // SECTION — CREATOR NOTE (yellow card)
@@ -451,21 +297,22 @@ function buildArcade(): HTMLElement {
 
 function buildCreator(): HTMLElement {
   return el(`
-<section id="docs" class="j-creator">
-  <div class="j-creator-inner">
-    <div class="j-creator-card j-reveal">
-      <div class="j-creator-card-decor">
-        ${puzzleSVG({ fill: '#ffdfba', stroke: 'transparent', top: 'tab', right: 'tab', bottom: 'tab', left: 'tab' })}
-      </div>
+<section id="solve-sdk" class="j-creator j-puzzle-border">
+    <div class="j-creator-floater j-creator-floater-1">
+      ${puzzleEl('#bae1ff', { top: 'tab', right: 'hole', bottom: 'flat', left: 'flat' }, 'transparent')}
+    </div>
+    <div class="j-creator-floater j-creator-floater-2">
+      ${puzzleEl('#ffb3ba', { top: 'flat', right: 'tab', bottom: 'tab', left: 'flat' }, 'transparent')}
+    </div>
+    <div class="j-creator-card">
       <div class="j-creator-body">
         <div class="j-creator-text">
           <h3 class="j-creator-title">Need help with solve redirection?</h3>
           <p class="j-creator-desc">
-            Check out our comprehensive documentation with code examples
+            Check out the <a href="/docs">documentation</a> with code examples
             and step-by-step guides.
           </p>
         </div>
-        <a href="#docs" class="j-creator-btn">Read the docs</a>
       </div>
       <div class="j-code-block">
         <div class="j-code-dots">
@@ -474,19 +321,16 @@ function buildCreator(): HTMLElement {
           <div class="j-code-dot" style="background:#baffc9"></div>
         </div>
         <div class="j-code-content">
-          <div><span class="j-code-comment">// Example solve redirection</span></div>
+          <div><span class="j-code-comment">// Lightweight solve crediting snippet</span></div>
           <div>
-            <span class="j-code-keyword">function </span
-            ><span class="j-code-fn">onPuzzleSolved</span>() {
+            &lt;<span class="j-code-fn">script</span> <span class="j-code-prop">src</span>=<span class="j-code-str">"https://api.yourdomain.com/games/sdk.js"</span> <span class="j-code-prop">defer</span>&gt;&lt;/<span class="j-code-fn">script</span>&gt;
           </div>
-          <div style="padding-left:2em">
-            <span class="j-code-prop">window.location.href</span> =
-            <span class="j-code-str">'jigsaw://solved?puzzle=YOUR_ID'</span>;
+          <div>
+            &lt;<span class="j-code-fn">button</span> <span class="j-code-prop">data-jigsaw-win</span> <span class="j-code-prop">data-puzzle-id</span>=<span class="j-code-str">"YOUR_ID"</span>&gt;win&lt;/<span class="j-code-fn">button</span>&gt;
           </div>
-          <div>}</div>
+          <div><span class="j-code-comment">// works on third-party hosts via popup auth</span></div>
         </div>
       </div>
-    </div>
   </div>
 </section>`);
 }
@@ -504,32 +348,32 @@ interface FAQItem {
 
 const FAQS: FAQItem[] = [
   {
-    question: 'Do I host my own puzzle?',
-    answer: 'Yes! You host your puzzle on your own domain or platform (like GitHub Pages, Vercel, Netlify, etc.). This keeps you in control of your creation and lets you iterate whenever you want. The Arcade just links to your live puzzle.',
+    question: 'Am I eligible to participate?',
+    answer: 'Anyone 18 or younger can!',
     fill: '#bae1ff',
-    notch: { top: 'flat', right: 'tab', bottom: 'flat', left: 'flat' },
+    notch: { top: 'hole', right: 'tab', bottom: 'hole', left: 'flat' },
   },
   {
-    question: 'What counts as shipped?',
-    answer: 'A puzzle is "shipped" when it\'s publicly accessible via a URL, has an open source repository, and implements the solve redirection protocol. It doesn\'t need to be perfect — just playable and shareable!',
+    question: 'Do I host my own puzzle?',
+    answer: 'Yes! You host your puzzle on your own domain or platform (like GitHub Pages, Vercel, etc.). The Arcade just links to your live puzzle.',
     fill: '#baffc9',
-    notch: { top: 'tab', right: 'flat', bottom: 'flat', left: 'flat' },
+    notch: { top: 'tab', right: 'tab', bottom: 'flat', left: 'flat' },
   },
   {
-    question: 'How are solves credited?',
-    answer: 'When a player solves your puzzle, your site redirects them to a special Jigsaw URL that credits the solve. This is why implementing solve redirection is important — it\'s how the arcade tracks who solved what.',
+    question: 'Does  ___  count as a "puzzle"?',
+    answer: 'Anything goes as long as it\'s interactive and has a clear and clever solution! Just make sure the solve code snippet is properly added.',
     fill: '#ffb3ba',
-    notch: { top: 'flat', right: 'flat', bottom: 'tab', left: 'flat' },
+    notch: { top: 'flat', right: 'flat', bottom: 'tab', left: 'tab' },
   },
   {
-    question: 'Do I need to be advanced?',
-    answer: 'Not at all! Whether you\'re just learning HTML/CSS or building complex interactive experiences, all skill levels are welcome. Start simple and build up. The important thing is making something clever and playable.',
+    question: 'How do Arcade Coins and prizes work?',
+    answer: 'Most coins are awarded for project completion, and some for receiving community engagement (upvotes or solves). Solving others\' puzzles in the arcade after your submission also earns you coins! Coins can be redeemed for fun rewards like puzzle, swag, and much more!',
     fill: '#ffffba',
-    notch: { top: 'flat', right: 'flat', bottom: 'flat', left: 'tab' },
+    notch: { top: 'hole', right: 'flat', bottom: 'flat', left: 'tab' },
   },
   {
-    question: 'What kinds of rewards are there?',
-    answer: 'Creators and solvers both earn recognition in the arcade. Top puzzles get featured, prolific builders get creator badges, and dedicated solvers climb the leaderboard. It\'s about reputation and community kudos!',
+    question: 'How do I start?',
+    answer: 'Play some puzzles! Check out the <a href="/docs">documentation</a> for guides, resources, and inspiration to get you going!',
     fill: '#ffdfba',
     notch: { top: 'tab', right: 'flat', bottom: 'tab', left: 'flat' },
   },
@@ -537,7 +381,7 @@ const FAQS: FAQItem[] = [
 
 function buildFAQ(): HTMLElement {
   const items = FAQS.map((f, i) => `
-    <div class="j-faq-item j-reveal delay-${(i % 4) + 1}" data-faq="${i}">
+    <div class="j-faq-item" data-faq="${i}">
       <button class="j-faq-btn" aria-expanded="false">
         <div class="j-faq-btn-left">
           <div class="j-faq-piece-icon">
@@ -546,7 +390,6 @@ function buildFAQ(): HTMLElement {
           </div>
           <h3 class="j-faq-question">${f.question}</h3>
         </div>
-        <div class="j-faq-chevron">${icon('chevronDown', 18)}</div>
       </button>
       <div class="j-faq-answer" role="region">
         <div class="j-faq-answer-inner">${f.answer}</div>
@@ -558,37 +401,20 @@ function buildFAQ(): HTMLElement {
   <div class="j-faq-decor">
     ${puzzleEl('#bae1ff', { top: 'flat', right: 'tab', bottom: 'flat', left: 'tab' }, 'transparent')}
   </div>
+  <div class="j-faq-floater j-faq-floater-1">
+    ${puzzleEl('#ffffba', { top: 'tab', right: 'flat', bottom: 'hole', left: 'flat' }, 'transparent')}
+  </div>
+  <div class="j-faq-floater j-faq-floater-2">
+    ${puzzleEl('#ffdfba', { top: 'flat', right: 'hole', bottom: 'flat', left: 'tab' }, 'transparent')}
+  </div>
   <div class="j-faq-inner">
-    <div class="j-section-header j-reveal">
+    <div class="j-section-header">
       <h2 class="j-section-title" style="filter:drop-shadow(4px 4px 0 #baffc9)">FAQ</h2>
       <p class="j-section-subtitle">Quick answers to common questions</p>
     </div>
     <div class="j-faq-list">${items}</div>
   </div>
 </section>`);
-}
-
-// ============================================================
-// INTERACTION — SCROLL REVEAL
-// ============================================================
-
-function setupReveal(): void {
-  const els = document.querySelectorAll<HTMLElement>('.j-reveal');
-  if (!els.length) return;
-
-  const obs = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('is-visible');
-          obs.unobserve(entry.target); // fire once
-        }
-      });
-    },
-    { threshold: 0.12 },
-  );
-
-  els.forEach((el) => obs.observe(el));
 }
 
 // ============================================================
@@ -629,7 +455,6 @@ function lerp(a: number, b: number, t: number): number {
 function setupArcade(): void {
   const section  = document.querySelector<HTMLElement>('.j-arcade-stage-section');
   const pieceEls = Array.from(document.querySelectorAll<HTMLElement>('.j-arcade-scroll-piece'));
-  const backdrop = document.querySelector<HTMLElement>('.j-arcade-msg');
   const hint     = document.querySelector<HTMLElement>('.j-section-subtitle');
 
   if (!section || !pieceEls.length) return;
@@ -656,7 +481,6 @@ function setupArcade(): void {
       el.style.transform = `translate(${x}px, ${y}px) rotate(${rot}deg)`;
     });
 
-    if (backdrop) backdrop.classList.toggle('assembled', prog > 0.82);
     if (hint)     hint.style.opacity = String(Math.max(0, 1 - prog * 2.5));
   }
 
@@ -673,14 +497,11 @@ export function initJigsaw(root: HTMLElement): void {
 
   root.appendChild(buildHero());
   root.appendChild(buildPrinciples());
-  // root.appendChild(buildExamples());
-  root.appendChild(buildArcade());
   root.appendChild(buildCreator());
   root.appendChild(buildFAQ());
 
   // Wait a tick for DOM to settle before setting up observers
   requestAnimationFrame(() => {
-    setupReveal();
     setupFAQ();
     setupArcade();
   });
