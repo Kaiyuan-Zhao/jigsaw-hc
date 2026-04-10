@@ -207,8 +207,7 @@ function buildGalleryCards(apiPuzzles: ArcadeApiPuzzle[], auth: AuthMeResponse |
 function buildArcadePage(auth: AuthMeResponse | null, apiPuzzles: ArcadeApiPuzzle[]): HTMLElement {
   const user = auth?.authenticated ? auth.user : undefined
   const piecePanel = user ? buildPiecePanel(user) : ''
-  const creatorFormPanel = user && !user.isAdmin ? buildCreatorPuzzlePanel() : ''
-  const adminGrantPanel = user?.isAdmin ? buildAdminPanel() : ''
+  const creatorFormPanel = user ? buildCreatorPuzzlePanel() : ''
 
   return htmlToElement(`
 <section class="j-arcade-gallery-page">
