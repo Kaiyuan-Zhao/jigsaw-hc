@@ -1,100 +1,10 @@
+import type { EdgeType } from './puzzle-path'
+import { htmlToElement } from './lib/dom'
+import { puzzleSVG, type PuzzleSvgOptions } from './ui/puzzle-svg'
+
 // ============================================================
 // PUZZLES AND OTHER ICON STUFF
 // ============================================================
-type EdgeType = 'tab' | 'hole' | 'flat';
-
-interface PuzzleOpts {
-  fill?: string;
-  stroke?: string;
-  strokeWidth?: number;
-  top?: EdgeType;
-  right?: EdgeType;
-  bottom?: EdgeType;
-  left?: EdgeType;
-  mid?: number;
-  /** Extra SVG class */
-  cls?: string;
-}
-
-function buildPuzzlePath(
-  top: EdgeType, right: EdgeType, bottom: EdgeType, left: EdgeType, MID: number): string {
-  const TAB  = 25;  // protrusion beyond the square edge
-  const NECK = 15;  // half-width of tab at its base
-
-  const segs: string[] = [`M 0 0`];
-
-  // — Top edge (left → right) —
-  if (top === 'tab') {
-    segs.push(`L ${MID - NECK} 0`);
-    segs.push(`C ${MID - NECK} ${-TAB}  ${MID + NECK} ${-TAB}  ${MID + NECK} 0`);
-  } else if (top === 'hole') {
-    segs.push(`L ${MID - NECK} 0`);
-    segs.push(`C ${MID - NECK} ${TAB}  ${MID + NECK} ${TAB}  ${MID + NECK} 0`);
-  }
-  segs.push(`L 100 0`);
-
-  // — Right edge (top → bottom) —
-  if (right === 'tab') {
-    segs.push(`L 100 ${MID - NECK}`);
-    segs.push(`C ${100 + TAB} ${MID - NECK}  ${100 + TAB} ${MID + NECK}  100 ${MID + NECK}`);
-  } else if (right === 'hole') {
-    segs.push(`L 100 ${MID - NECK}`);
-    segs.push(`C ${100 - TAB} ${MID - NECK}  ${100 - TAB} ${MID + NECK}  100 ${MID + NECK}`);
-  }
-  segs.push(`L 100 100`);
-
-  // — Bottom edge (right → left) —
-  if (bottom === 'tab') {
-    segs.push(`L ${MID + NECK} 100`);
-    segs.push(`C ${MID + NECK} ${100 + TAB}  ${MID - NECK} ${100 + TAB}  ${MID - NECK} 100`);
-  } else if (bottom === 'hole') {
-    segs.push(`L ${MID + NECK} 100`);
-    segs.push(`C ${MID + NECK} ${100 - TAB}  ${MID - NECK} ${100 - TAB}  ${MID - NECK} 100`);
-  }
-  segs.push(`L 0 100`);
-
-  // — Left edge (bottom → top) —
-  if (left === 'tab') {
-    segs.push(`L 0 ${MID + NECK}`);
-    segs.push(`C ${-TAB} ${MID + NECK}  ${-TAB} ${MID - NECK}  0 ${MID - NECK}`);
-  } else if (left === 'hole') {
-    segs.push(`L 0 ${MID + NECK}`);
-    segs.push(`C ${TAB} ${MID + NECK}  ${TAB} ${MID - NECK}  0 ${MID - NECK}`);
-  }
-  segs.push(`L 0 0 Z`);
-
-  return segs.join(' ');
-}
-
-/**
- * Returns an inline SVG string for a puzzle piece.
- * Meant to be used as innerHTML inside a `position: relative` container.
- * The SVG is `position: absolute; inset: 0; overflow: visible`.
- */
-function puzzleSVG(opts: PuzzleOpts = {}): string {
-  const {
-    fill        = '#ffffff',
-    stroke      = '#111827',
-    strokeWidth = 3,
-    top    = 'tab',
-    right  = 'tab',
-    bottom = 'tab',
-    left   = 'tab',
-    cls    = 'j-puzzle-svg',
-    mid    = 50,
-  } = opts;
-
-  const path = buildPuzzlePath(top, right, bottom, left, mid);
-
-  return `
-<svg class="${cls}" viewBox="-16 -16 132 132"
-     xmlns="http://www.w3.org/2000/svg"
-     style="position:absolute;left:-16%;top:-16%;width:132%;height:132%;overflow:visible;display:block;pointer-events:none">
-  <path d="${path}" fill="${fill}"/>
-  <path d="${path}" fill="none" stroke="${stroke}" stroke-width="${strokeWidth}"
-        stroke-linejoin="round" paint-order="stroke fill"/>
-</svg>`;
-}
 
 type IconName = 'brain' | 'mousePointer' | 'globe' | 'gamepad' | 'lock' |
                 'ghost' | 'cpu' | 'star' | 'zap' | 'trophy' | 'target' | 'chevronDown';
@@ -153,14 +63,8 @@ function icon(name: IconName, size = 24): string {
 
 type Notch = { top: EdgeType; right: EdgeType; bottom: EdgeType; left: EdgeType };
 
-function el<T extends HTMLElement = HTMLElement>(html: string): T {
-  const d = document.createElement('div');
-  d.innerHTML = html.trim();
-  return d.firstElementChild as T;
-}
-
 function puzzleEl(fill: string, notch: Notch, stroke = '#111827', strokeWidth?: number, mid?: number): string {
-  const opts: PuzzleOpts = { fill, stroke, mid, ...notch };
+  const opts: PuzzleSvgOptions = { fill, stroke, mid, ...notch };
   if (strokeWidth !== undefined) opts.strokeWidth = strokeWidth;
   if (mid == undefined) opts.mid = 50;
   return puzzleSVG(opts);
@@ -171,7 +75,7 @@ function puzzleEl(fill: string, notch: Notch, stroke = '#111827', strokeWidth?: 
 // ============================================================
 
 function buildHero(): HTMLElement {
-  return el(`
+  return htmlToElement(`
 <section class="j-hero j-puzzle-border">
   <div class="j-hero-floater j-hero-floater-1">
     ${puzzleEl('#bae1ff', { top: 'flat', right: 'tab', bottom: 'tab', left: 'flat' }, 'transparent')}
@@ -225,7 +129,7 @@ const PRINCIPLES: Principle[] = [
   {
     icon: 'globe',
     title: 'Solvable',
-    desc: 'Credits solves (see Docs)',
+    desc: 'Credits solves (see #docs!)',
     fill: '#ffb3ba',
     notch: { top: 'flat', right: 'flat', bottom: 'tab', left: 'hole' },
     startX: 420, startY: -160, startRot: 30,
@@ -261,7 +165,7 @@ function buildPrinciples(): HTMLElement {
       </div>
     </div>`).join('');
 
-  return el(`
+  return htmlToElement(`
 <section class="j-principles j-arcade-stage-section j-puzzle-border">
   <div class="j-dot-bg"></div>
   <div class="j-principles-decor">
@@ -296,8 +200,8 @@ function buildPrinciples(): HTMLElement {
 // ============================================================
 
 function buildCreator(): HTMLElement {
-  return el(`
-<section id="solve-sdk" class="j-creator j-puzzle-border">
+  return htmlToElement(`
+<section id="docs" class="j-creator j-puzzle-border">
     <div class="j-creator-floater j-creator-floater-1">
       ${puzzleEl('#bae1ff', { top: 'tab', right: 'hole', bottom: 'flat', left: 'flat' }, 'transparent')}
     </div>
@@ -309,7 +213,7 @@ function buildCreator(): HTMLElement {
         <div class="j-creator-text">
           <h3 class="j-creator-title">Need help with solve redirection?</h3>
           <p class="j-creator-desc">
-            Check out the <a href="/docs">documentation</a> with code examples
+            Check out the <a href="#docs">documentation</a> with code examples
             and step-by-step guides.
           </p>
         </div>
@@ -366,14 +270,14 @@ const FAQS: FAQItem[] = [
     notch: { top: 'flat', right: 'flat', bottom: 'tab', left: 'tab' },
   },
   {
-    question: 'How do Arcade Coins and prizes work?',
-    answer: 'Most coins are awarded for project completion, and some for receiving community engagement (upvotes or solves). Solving others\' puzzles in the arcade after your submission also earns you coins! Coins can be redeemed for fun rewards like puzzle, swag, and much more!',
+    question: 'How do Arcade Pieces and prizes work?',
+    answer: 'Most pieces are awarded for project completion, and some for receiving community engagement (upvotes or solves). Solving others\' puzzles in the arcade after your submission also earns you pieces! Pieces can be redeemed for fun rewards like puzzles, swag, and much more!',
     fill: '#ffffba',
     notch: { top: 'hole', right: 'flat', bottom: 'flat', left: 'tab' },
   },
   {
     question: 'How do I start?',
-    answer: 'Play some puzzles! Check out the <a href="/docs">documentation</a> for guides, resources, and inspiration to get you going!',
+    answer: 'Play some puzzles! Check out the <a href="#docs">documentation</a> for guides, resources, and inspiration to get you going!',
     fill: '#ffdfba',
     notch: { top: 'tab', right: 'flat', bottom: 'tab', left: 'flat' },
   },
@@ -396,7 +300,7 @@ function buildFAQ(): HTMLElement {
       </div>
     </div>`).join('');
 
-  return el(`
+  return htmlToElement(`
 <section class="j-faq">
   <div class="j-faq-decor">
     ${puzzleEl('#bae1ff', { top: 'flat', right: 'tab', bottom: 'flat', left: 'tab' }, 'transparent')}

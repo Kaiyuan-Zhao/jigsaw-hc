@@ -1,0 +1,1 @@
+export { initArcade } from '../arcade'

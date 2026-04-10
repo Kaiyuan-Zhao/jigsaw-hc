@@ -1,33 +1,18 @@
 import { API_BASE_URL } from './config'
-
-type AuthMeResponse = {
-	authenticated: boolean
-	user?: {
-		id: string
-		name?: string
-		email?: string
-		coins?: number
-		isAdmin?: boolean
-	}
-}
-
-function el<T extends HTMLElement = HTMLElement>(html: string): T {
-	const d = document.createElement('div')
-	d.innerHTML = html.trim()
-	return d.firstElementChild as T
-}
+import { htmlToElement } from './lib/dom'
+import type { AuthMeResponse } from './types/auth'
 
 export function buildSiteHeader(): HTMLElement {
-	const header = el<HTMLElement>(`
+	const header = htmlToElement<HTMLElement>(`
 		<header class="j-site-header">
 			<div class="j-site-header-inner">
-				<div class="j-site-header-left">
-					<a class="j-site-logo" href="/">Jigsaw</a>
-					<nav class="j-site-header-nav" aria-label="Site">
-						<a class="j-site-nav-link" href="/arcade">Arcade</a>
-						<a class="j-site-nav-link" href="/docs">Docs</a>
-					</nav>
-				</div>
+				<a class="j-site-logo" href="/">Jigsaw</a>
+				<nav class="j-site-nav" aria-label="Primary">
+					<a class="j-site-nav-link" href="/">Home</a>
+					<a class="j-site-nav-link" href="/arcade">Arcade</a>
+					<a class="j-site-nav-link" href="/shop">Shop</a>
+					<a class="j-site-nav-link" href="/docs/solve-crediting">Docs</a>
+				</nav>
 				<div class="j-site-auth"></div>
 			</div>
 		</header>
@@ -47,12 +32,11 @@ export function buildSiteHeader(): HTMLElement {
 		}
 	}
 
-	const setSignedIn = (name: string, coins = 0, isAdmin = false): void => {
+	const setSignedIn = (name: string, pieces = 0): void => {
 		authSlot.innerHTML = `
 			<div class="j-site-user-wrap">
-				<span class="j-site-coin-pill">🪙 ${coins}</span>
+				<span class="j-site-piece-pill">🧩 ${pieces}</span>
 				<span class="j-site-user">${name}</span>
-				${isAdmin ? '<span class="j-site-admin-pill">Admin</span>' : ''}
 				<button class="j-site-logout" type="button">Logout</button>
 			</div>
 		`
@@ -91,7 +75,7 @@ export function buildSiteHeader(): HTMLElement {
 			}
 
 			const userName = payload.user?.name || payload.user?.email || 'Signed in'
-			setSignedIn(userName, payload.user?.coins || 0, Boolean(payload.user?.isAdmin))
+			setSignedIn(userName, payload.user?.pieces || 0)
 		} catch {
 			setSignedOut()
 		}

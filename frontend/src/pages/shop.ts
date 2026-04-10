@@ -1,0 +1,1 @@
+export { initShop } from '../shop'

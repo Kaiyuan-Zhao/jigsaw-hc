@@ -26,3 +26,9 @@ todo.md
 
 .env
 backend/.env
+.cursor/
+backend/data/*.sqlite
+backend/data/*.sqlite-shm
+backend/data/*.sqlite-wal
+
+backend/*.md

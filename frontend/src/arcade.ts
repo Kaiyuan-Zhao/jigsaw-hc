@@ -1,44 +1,11 @@
-
 import { API_BASE_URL } from './config'
-
-type EdgeType = 'tab' | 'hole' | 'flat'
+import type { EdgeType } from './puzzle-path'
+import { htmlToElement } from './lib/dom'
+import { puzzleSVG } from './ui/puzzle-svg'
+import type { ApiErrorResponse, AuthMeResponse, AuthUser } from './types/auth'
+import type { ArcadeApiPuzzle, ExampleCard } from './types/arcade'
 type IconName = 'heart'
 type Notch = { top: EdgeType; right: EdgeType; bottom: EdgeType; left: EdgeType }
-
-type AuthUser = {
-  id: string
-  name?: string
-  email?: string
-  coins?: number
-  isAdmin?: boolean
-}
-
-type AuthMeResponse = {
-  authenticated: boolean
-  user?: AuthUser
-}
-
-type ExampleCard = {
-  title: string
-  author: string
-  genre: string
-  thumbnail: string
-  likes: number
-  gameUrl?: string
-}
-
-type PuzzleOpts = {
-  fill?: string
-  stroke?: string
-  strokeWidth?: number
-  top?: EdgeType
-  right?: EdgeType
-  bottom?: EdgeType
-  left?: EdgeType
-  mid?: number
-}
-
-type ApiErrorResponse = { error?: string; coins?: number }
 
 const HERO_THUMB = new URL('./assets/vite.svg', import.meta.url).href
 const ARCADE_PASTEL_COLORS = ['#bae1ff', '#ffb3ba', '#baffc9', '#ffffba'] as const
@@ -62,124 +29,105 @@ function icon(name: IconName, size = 20, filled = false): string {
   return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="${filled ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${ICON_PATHS[name]}</svg>`
 }
 
-function createElement<T extends HTMLElement = HTMLElement>(html: string): T {
-  const container = document.createElement('div')
-  container.innerHTML = html.trim()
-  return container.firstElementChild as T
-}
-
-function buildPuzzlePath(top: EdgeType, right: EdgeType, bottom: EdgeType, left: EdgeType, mid: number): string {
-  const tab = 25
-  const neck = 15
-  const segs: string[] = ['M 0 0']
-
-  if (top === 'tab') {
-    segs.push(`L ${mid - neck} 0`)
-    segs.push(`C ${mid - neck} ${-tab} ${mid + neck} ${-tab} ${mid + neck} 0`)
-  } else if (top === 'hole') {
-    segs.push(`L ${mid - neck} 0`)
-    segs.push(`C ${mid - neck} ${tab} ${mid + neck} ${tab} ${mid + neck} 0`)
-  }
-  segs.push('L 100 0')
-
-  if (right === 'tab') {
-    segs.push(`L 100 ${mid - neck}`)
-    segs.push(`C ${100 + tab} ${mid - neck} ${100 + tab} ${mid + neck} 100 ${mid + neck}`)
-  } else if (right === 'hole') {
-    segs.push(`L 100 ${mid - neck}`)
-    segs.push(`C ${100 - tab} ${mid - neck} ${100 - tab} ${mid + neck} 100 ${mid + neck}`)
-  }
-  segs.push('L 100 100')
-
-  if (bottom === 'tab') {
-    segs.push(`L ${mid + neck} 100`)
-    segs.push(`C ${mid + neck} ${100 + tab} ${mid - neck} ${100 + tab} ${mid - neck} 100`)
-  } else if (bottom === 'hole') {
-    segs.push(`L ${mid + neck} 100`)
-    segs.push(`C ${mid + neck} ${100 - tab} ${mid - neck} ${100 - tab} ${mid - neck} 100`)
-  }
-  segs.push('L 0 100')
-
-  if (left === 'tab') {
-    segs.push(`L 0 ${mid + neck}`)
-    segs.push(`C ${-tab} ${mid + neck} ${-tab} ${mid - neck} 0 ${mid - neck}`)
-  } else if (left === 'hole') {
-    segs.push(`L 0 ${mid + neck}`)
-    segs.push(`C ${tab} ${mid + neck} ${tab} ${mid - neck} 0 ${mid - neck}`)
-  }
-  segs.push('L 0 0 Z')
-
-  return segs.join(' ')
-}
-
-function puzzleSVG(opts: PuzzleOpts = {}): string {
-  const {
-    fill = '#ffffff',
-    stroke = '#111827',
-    strokeWidth = 3,
-    top = 'tab',
-    right = 'tab',
-    bottom = 'tab',
-    left = 'tab',
-    mid = 50,
-  } = opts
-
-  const path = buildPuzzlePath(top, right, bottom, left, mid)
-
-  return `
-<svg class="j-puzzle-svg" viewBox="-16 -16 132 132"
-     xmlns="http://www.w3.org/2000/svg"
-     style="position:absolute;left:-16%;top:-16%;width:132%;height:132%;overflow:visible;display:block;pointer-events:none">
-  <path d="${path}" fill="${fill}"/>
-  <path d="${path}" fill="none" stroke="${stroke}" stroke-width="${strokeWidth}"
-        stroke-linejoin="round" paint-order="stroke fill"/>
-</svg>`
-}
-
 function puzzleEl(fill: string, notch: Notch): string {
   return puzzleSVG({ fill, ...notch })
 }
 
-function buildCoinPanel(user: AuthUser): string {
+function buildPiecePanel(user: AuthUser): string {
   return `
-    <section class="j-arcade-coins-panel">
-      <div class="j-arcade-coins-head">
-        <h2 class="j-arcade-coins-title">Arcade Coins</h2>
-        <p class="j-arcade-coins-user">${user.name || user.email || 'Signed in'}</p>
+    <section class="j-arcade-pieces-panel">
+      <div class="j-arcade-pieces-head">
+        <h2 class="j-arcade-pieces-title">Arcade Pieces</h2>
+        <p class="j-arcade-pieces-user">${user.name || user.email || 'Signed in'}</p>
       </div>
-      <div class="j-arcade-coins-value">🪙 ${user.coins || 0}</div>
-      <div class="j-arcade-coin-test-controls">
-        <button class="j-coin-test-btn" type="button" data-delta="1">+1 coin</button>
-        <button class="j-coin-test-btn" type="button" data-delta="-1">-1 coin</button>
+      <div class="j-arcade-pieces-value">🧩 ${user.pieces || 0}</div>
+      <div class="j-arcade-piece-test-controls">
+        <button class="j-piece-test-btn" type="button" data-delta="1000">+1 piece</button>
+        <button class="j-piece-test-btn" type="button" data-delta="-10">-1 piece</button>
       </div>
-      <p class="j-arcade-coin-test-status" aria-live="polite"></p>
+      <p class="j-arcade-piece-test-status" aria-live="polite"></p>
     </section>
   `
 }
 
-function buildAdminPanel(): string {
+function buildCreatorPuzzlePanel(): string {
   return `
-    <section class="j-arcade-admin-panel">
-      <h2 class="j-arcade-admin-title">Admin: Grant Coins</h2>
-      <form class="j-admin-grant-form">
-        <label class="j-admin-grant-label" for="grant-user-id">Hack Club user ID</label>
-        <input id="grant-user-id" name="userId" class="j-admin-grant-input" type="text" required />
-        <label class="j-admin-grant-label" for="grant-amount">Amount</label>
-        <input id="grant-amount" name="amount" class="j-admin-grant-input" type="number" min="1" step="1" required />
-        <label class="j-admin-grant-label" for="grant-reason">Reason (optional)</label>
-        <input id="grant-reason" name="reason" class="j-admin-grant-input" type="text" />
-        <button class="j-admin-grant-submit" type="submit">Grant coins</button>
-        <p class="j-admin-grant-status" aria-live="polite"></p>
+    <section class="j-arcade-creator-panel">
+      <h2 class="j-arcade-creator-title">List your puzzle in the arcade</h2>
+      <p class="j-arcade-creator-hint">Use the same <code class="j-arcade-code">puzzleId</code> as in your game’s reward button. Upvotes count only from signed-in Hack Club accounts; each unique upvote adds 2 pieces to your balance.</p>
+      <form class="j-creator-arcade-form">
+        <label class="j-arcade-form-label" for="arcade-self-puzzle-id">Puzzle ID</label>
+        <input id="arcade-self-puzzle-id" name="puzzleId" class="j-arcade-form-input" type="text" required autocomplete="off" />
+        <label class="j-arcade-form-label" for="arcade-self-title">Title</label>
+        <input id="arcade-self-title" name="title" class="j-arcade-form-input" type="text" required />
+        <label class="j-arcade-form-label" for="arcade-self-genre">Genre (optional)</label>
+        <input id="arcade-self-genre" name="genre" class="j-arcade-form-input" type="text" />
+        <label class="j-arcade-form-label" for="arcade-self-thumb">Thumbnail URL (optional)</label>
+        <input id="arcade-self-thumb" name="thumbnail" class="j-arcade-form-input" type="url" />
+        <label class="j-arcade-form-label" for="arcade-self-game-url">Game URL (optional)</label>
+        <input id="arcade-self-game-url" name="gameUrl" class="j-arcade-form-input" type="url" />
+        <button class="j-arcade-form-submit" type="submit">Save to arcade</button>
+        <p class="j-creator-arcade-status" aria-live="polite"></p>
       </form>
     </section>
   `
 }
 
-function buildCard(entry: ExampleCard, index: number): string {
+function escapeAttr(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+}
+
+function buildCardInner(
+  entry: { title: string; genre: string; author: string; thumbnail: string; gameUrl?: string | null },
+  index: number,
+  likeOpts:
+    | {
+        mode: 'demo'
+        count: number
+        demoTitle: string
+      }
+    | {
+        mode: 'upvote'
+        count: number
+        liked: boolean
+        disabled: boolean
+        titleAttr: string
+        puzzleId: string
+      }
+): string {
   const fill = ARCADE_PASTEL_COLORS[index % ARCADE_PASTEL_COLORS.length]
-  const thumbMarkup = entry.gameUrl
-    ? `<a class="j-arcade-thumb-link" href="${entry.gameUrl}" target="_self" rel="noopener noreferrer"><img class="j-arcade-thumb" src="${entry.thumbnail}" alt="${entry.title} thumbnail" /></a>`
-    : `<img class="j-arcade-thumb" src="${entry.thumbnail}" alt="${entry.title} thumbnail" />`
+  const safeUrl = entry.gameUrl?.trim()
+  const safeTitle = escapeHtml(entry.title)
+  const thumbMarkup = safeUrl
+    ? `<a class="j-arcade-thumb-link" href="${escapeAttr(safeUrl)}" target="_self" rel="noopener noreferrer"><img class="j-arcade-thumb" src="${escapeAttr(entry.thumbnail)}" alt="${escapeAttr(entry.title)} thumbnail" /></a>`
+    : `<img class="j-arcade-thumb" src="${escapeAttr(entry.thumbnail)}" alt="${escapeAttr(entry.title)} thumbnail" />`
+
+  const likeBlock =
+    likeOpts.mode === 'demo'
+      ? `<span class="j-like-demo-pill" role="text" title="${escapeAttr(likeOpts.demoTitle)}">
+              <span class="j-like-icon">${icon('heart', 15, false)}</span>
+              <span class="j-like-count">${likeOpts.count}</span>
+            </span>`
+      : (() => {
+          const likedClass = likeOpts.liked ? ' is-liked' : ''
+          const likedStr = likeOpts.liked ? 'true' : 'false'
+          const pressedStr = likeOpts.liked ? 'true' : 'false'
+          const disabledAttr = likeOpts.disabled ? ' disabled' : ''
+          return `<button class="j-like-btn${likedClass}" type="button" data-upvote-api="1" data-puzzle-id="${escapeAttr(likeOpts.puzzleId)}" data-liked="${likedStr}" data-base-count="${likeOpts.count}" aria-pressed="${pressedStr}" aria-label="${escapeAttr(likeOpts.titleAttr)}" title="${escapeAttr(likeOpts.titleAttr)}"${disabledAttr}>
+              <span class="j-like-icon">${icon('heart', 15, likeOpts.liked)}</span>
+              <span class="j-like-count">${likeOpts.count}</span>
+            </button>`
+        })()
 
   return `
     <div class="j-arcade-stack" style="z-index:${50 - index}" data-card-index="${index}">
@@ -194,14 +142,11 @@ function buildCard(entry: ExampleCard, index: number): string {
       <article class="j-arcade-piece j-arcade-piece-bottom">
         ${puzzleEl(fill, { top: 'hole', right: 'flat', bottom: 'flat', left: 'flat' })}
         <div class="j-arcade-piece-inner j-arcade-piece-inner-bottom">
-          <h2 class="j-arcade-card-title">${entry.title}</h2>
-          <p class="j-arcade-card-desc">${entry.genre}</p>
+          <h2 class="j-arcade-card-title">${safeTitle}</h2>
+          <p class="j-arcade-card-desc">${escapeHtml(entry.genre)}</p>
           <div class="j-arcade-card-footer">
-            <span class="j-arcade-card-author">${entry.author}</span>
-            <button class="j-like-btn" type="button" data-liked="false" data-base-count="${entry.likes}" aria-pressed="false" aria-label="Like ${entry.title}">
-              <span class="j-like-icon">${icon('heart', 15, false)}</span>
-              <span class="j-like-count">${entry.likes}</span>
-            </button>
+            <span class="j-arcade-card-author">${escapeHtml(entry.author)}</span>
+            ${likeBlock}
           </div>
         </div>
       </article>
@@ -209,47 +154,124 @@ function buildCard(entry: ExampleCard, index: number): string {
   `
 }
 
-function buildCards(): string {
-  return EXAMPLES.map((entry, index) => buildCard(entry, index)).join('')
+function buildDemoCard(entry: ExampleCard, index: number): string {
+  return buildCardInner(entry, index, {
+    mode: 'demo',
+    count: entry.likes,
+    demoTitle: 'Demo placeholder — only registered puzzles accept upvotes, and you must be signed in.',
+  })
 }
 
-function buildArcadePage(auth: AuthMeResponse | null): HTMLElement {
+function buildRegisteredCard(entry: ArcadeApiPuzzle, index: number, auth: AuthMeResponse | null): string {
+  const userId = auth?.authenticated ? auth.user?.id : undefined
+  const ownPuzzle = Boolean(userId && userId === entry.creatorUserId)
+  const signedIn = Boolean(auth?.authenticated)
+  const liked = entry.likedByMe
+  let titleAttr = `Upvote ${entry.title}`
+  if (!signedIn) {
+    titleAttr = 'Sign in to upvote (each unique upvote gives the creator 2 puzzle pieces)'
+  } else if (ownPuzzle) {
+    titleAttr = 'You cannot upvote your own puzzle'
+  } else if (liked) {
+    titleAttr = 'You already upvoted this puzzle'
+  } else {
+    titleAttr = `Upvote ${entry.title} (creator earns 2 puzzle pieces)`
+  }
+  const disabled = !signedIn || ownPuzzle || liked
+  return buildCardInner(
+    {
+      title: entry.title,
+      genre: entry.genre,
+      author: entry.authorLabel,
+      thumbnail: entry.thumbnail,
+      gameUrl: entry.gameUrl,
+    },
+    index,
+    {
+      mode: 'upvote',
+      count: entry.likeCount,
+      liked,
+      disabled,
+      titleAttr,
+      puzzleId: entry.puzzleId,
+    }
+  )
+}
+
+function buildGalleryCards(apiPuzzles: ArcadeApiPuzzle[], auth: AuthMeResponse | null): string {
+  const registered = apiPuzzles.map((p, i) => buildRegisteredCard(p, i, auth)).join('')
+  const demos = EXAMPLES.map((e, j) => buildDemoCard(e, j + apiPuzzles.length)).join('')
+  return registered + demos
+}
+
+function buildArcadePage(auth: AuthMeResponse | null, apiPuzzles: ArcadeApiPuzzle[]): HTMLElement {
   const user = auth?.authenticated ? auth.user : undefined
-  const coinPanel = user ? buildCoinPanel(user) : ''
+  const piecePanel = user ? buildPiecePanel(user) : ''
+  const creatorFormPanel = user && !user.isAdmin ? buildCreatorPuzzlePanel() : ''
   const adminGrantPanel = user?.isAdmin ? buildAdminPanel() : ''
 
-  return createElement(`
+  return htmlToElement(`
 <section class="j-arcade-gallery-page">
   <div class="j-arcade-gallery-inner">
     <header class="j-arcade-gallery-head">
       <h1 class="j-arcade-gallery-title">Arcade Gallery</h1>
-      <p class="j-arcade-gallery-subtitle">Every game is one puzzle piece in the full arcade.</p>
+      <p class="j-arcade-gallery-subtitle">Registered puzzles award their creator 2 puzzle pieces per unique upvote. Upvoting requires a signed-in Hack Club account.</p>
+      <p class="j-arcade-upvote-status" aria-live="polite"></p>
       <a href="/" class="j-arcade-back-link">Back to Home</a>
     </header>
-    ${coinPanel}
-    ${adminGrantPanel}
+    ${piecePanel}
+    ${creatorFormPanel}
     <div class="j-arcade-gallery-grid">
-      ${buildCards()}
+      ${buildGalleryCards(apiPuzzles, auth)}
     </div>
   </div>
 </section>
 `)
 }
 
-function setupLikes(root: HTMLElement): void {
-  const buttons = root.querySelectorAll<HTMLButtonElement>('.j-like-btn')
-  buttons.forEach((button) => {
-    button.addEventListener('click', () => {
-      const liked = button.dataset.liked === 'true'
-      const baseCount = Number(button.dataset.baseCount ?? '0')
-      const nextLiked = !liked
-      const countEl = button.querySelector<HTMLElement>('.j-like-count')
+type UpvoteOkResponse = { success?: boolean; likeCount?: number; newUpvote?: boolean }
 
-      button.dataset.liked = nextLiked ? 'true' : 'false'
-      button.setAttribute('aria-pressed', nextLiked ? 'true' : 'false')
-      button.classList.toggle('is-liked', nextLiked)
-      if (countEl) {
-        countEl.textContent = String(nextLiked ? baseCount + 1 : baseCount)
+function setupLikes(root: HTMLElement): void {
+  const upvoteStatus = root.querySelector<HTMLElement>('.j-arcade-upvote-status')
+  const buttons = root.querySelectorAll<HTMLButtonElement>('.j-like-btn[data-upvote-api="1"]')
+  buttons.forEach((button) => {
+    button.addEventListener('click', async () => {
+      if (button.disabled) return
+      const puzzleId = String(button.dataset.puzzleId || '').trim()
+      if (!puzzleId) return
+
+      if (upvoteStatus) {
+        upvoteStatus.textContent = ''
+        upvoteStatus.classList.remove('is-error')
+      }
+      button.disabled = true
+      try {
+        const response = await fetch(`${API_BASE_URL}/arcade/upvote`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ puzzleId }),
+        })
+        const payload = (await response.json()) as ApiErrorResponse & UpvoteOkResponse
+        if (!response.ok) {
+          throw new Error(payload.error || 'Upvote failed')
+        }
+        const likeCount = Number(payload.likeCount ?? button.dataset.baseCount ?? '0')
+        const countEl = button.querySelector<HTMLElement>('.j-like-count')
+        const iconWrap = button.querySelector<HTMLElement>('.j-like-icon')
+        button.dataset.baseCount = String(likeCount)
+        button.dataset.liked = 'true'
+        button.setAttribute('aria-pressed', 'true')
+        button.classList.add('is-liked')
+        if (countEl) countEl.textContent = String(likeCount)
+        if (iconWrap) iconWrap.innerHTML = icon('heart', 15, true)
+        button.setAttribute('aria-label', 'You already upvoted this puzzle')
+        button.title = 'You already upvoted this puzzle'
+      } catch (error) {
+        if (upvoteStatus) {
+          setStatusMessage(upvoteStatus, error instanceof Error ? error.message : 'Upvote failed', 'error')
+        }
+        button.disabled = false
       }
     })
   })
@@ -262,62 +284,71 @@ function setStatusMessage(statusEl: HTMLElement, message: string, type: 'error' 
   if (type === 'success') statusEl.classList.add('is-success')
 }
 
-function setupAdminGrant(root: HTMLElement, auth: AuthMeResponse | null): void {
-  if (!auth?.authenticated || !auth.user?.isAdmin) return
+async function refreshArcadeGallery(root: HTMLElement): Promise<void> {
+  const [auth, puzzles] = await Promise.all([fetchAuthState(), fetchArcadePuzzles()])
+  mountArcade(root, auth, puzzles)
+}
 
-  const form = root.querySelector<HTMLFormElement>('.j-admin-grant-form')
-  const status = root.querySelector<HTMLElement>('.j-admin-grant-status')
+function setupCreatorArcadeForm(root: HTMLElement, auth: AuthMeResponse | null): void {
+  if (!auth?.authenticated) return
+
+  const form = root.querySelector<HTMLFormElement>('.j-creator-arcade-form')
+  const status = root.querySelector<HTMLElement>('.j-creator-arcade-status')
   if (!form || !status) return
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault()
     const formData = new FormData(form)
-    const userId = String(formData.get('userId') || '').trim()
-    const amount = Number(formData.get('amount'))
-    const reason = String(formData.get('reason') || '').trim()
-    const normalizedAmount = Math.floor(amount)
+    const puzzleId = String(formData.get('puzzleId') || '').trim()
+    const title = String(formData.get('title') || '').trim()
+    const genre = String(formData.get('genre') || '').trim()
+    const thumbnail = String(formData.get('thumbnail') || '').trim()
+    const gameUrl = String(formData.get('gameUrl') || '').trim()
 
-    if (!userId || !Number.isFinite(amount) || normalizedAmount <= 0) {
-      setStatusMessage(status, 'Enter a valid user ID and positive coin amount.', 'error')
+    if (!puzzleId || !title) {
+      setStatusMessage(status, 'Puzzle ID and title are required.', 'error')
       return
     }
 
-    const submitButton = form.querySelector<HTMLButtonElement>('.j-admin-grant-submit')
+    const submitButton = form.querySelector<HTMLButtonElement>('.j-arcade-form-submit')
     if (submitButton) submitButton.disabled = true
-    setStatusMessage(status, 'Granting coins...', 'pending')
+    setStatusMessage(status, 'Saving…', 'pending')
 
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/coins/grant`, {
+      const response = await fetch(`${API_BASE_URL}/arcade/puzzles`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId,
-          amount: normalizedAmount,
-          reason: reason || undefined,
+          puzzleId,
+          title,
+          genre: genre || undefined,
+          thumbnail: thumbnail || undefined,
+          gameUrl: gameUrl || undefined,
         }),
       })
 
       const payload = (await response.json()) as ApiErrorResponse
-      if (!response.ok) throw new Error(payload.error || 'Failed to grant coins')
+      if (!response.ok) throw new Error(payload.error || 'Failed to save your puzzle')
 
-      setStatusMessage(status, `Granted ${normalizedAmount} coins to ${userId}. New balance: ${payload.coins || 0}.`, 'success')
+      setStatusMessage(status, `Your puzzle “${title}” is listed in the arcade.`, 'success')
       form.reset()
+      await refreshArcadeGallery(root)
     } catch (error) {
-      setStatusMessage(status, error instanceof Error ? error.message : 'Failed to grant coins', 'error')
+      setStatusMessage(status, error instanceof Error ? error.message : 'Failed to save', 'error')
     } finally {
       if (submitButton) submitButton.disabled = false
     }
   })
 }
 
-function setupCoinTestControls(root: HTMLElement, auth: AuthMeResponse | null): void {
+function setupPieceTestControls(root: HTMLElement, auth: AuthMeResponse | null): void {
   if (!auth?.authenticated || !auth.user) return
 
-  const buttons = root.querySelectorAll<HTMLButtonElement>('.j-coin-test-btn')
-  const status = root.querySelector<HTMLElement>('.j-arcade-coin-test-status')
-  const coinsValue = root.querySelector<HTMLElement>('.j-arcade-coins-value')
-  if (!buttons.length || !status || !coinsValue) return
+  const buttons = root.querySelectorAll<HTMLButtonElement>('.j-piece-test-btn')
+  const status = root.querySelector<HTMLElement>('.j-arcade-piece-test-status')
+  const piecesValue = root.querySelector<HTMLElement>('.j-arcade-pieces-value')
+  if (!buttons.length || !status || !piecesValue) return
 
   buttons.forEach((button) => {
     button.addEventListener('click', async () => {
@@ -327,10 +358,10 @@ function setupCoinTestControls(root: HTMLElement, auth: AuthMeResponse | null): 
       buttons.forEach((item) => {
         item.disabled = true
       })
-      setStatusMessage(status, 'Updating coins...', 'pending')
+      setStatusMessage(status, 'Updating pieces...', 'pending')
 
       try {
-        const response = await fetch(`${API_BASE_URL}/coins/test-adjust`, {
+        const response = await fetch(`${API_BASE_URL}/pieces/test-adjust`, {
           method: 'POST',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
@@ -338,13 +369,13 @@ function setupCoinTestControls(root: HTMLElement, auth: AuthMeResponse | null): 
         })
 
         const payload = (await response.json()) as ApiErrorResponse
-        if (!response.ok) throw new Error(payload.error || 'Failed to update coins')
+        if (!response.ok) throw new Error(payload.error || 'Failed to update pieces')
 
-        const nextCoins = Number(payload.coins || 0)
-        coinsValue.textContent = `🪙 ${nextCoins}`
-        setStatusMessage(status, `Coins updated. New balance: ${nextCoins}.`, 'success')
+        const nextPieces = Number(payload.pieces || 0)
+        piecesValue.textContent = `🧩 ${nextPieces}`
+        setStatusMessage(status, `Pieces updated. New balance: ${nextPieces}.`, 'success')
       } catch (error) {
-        setStatusMessage(status, error instanceof Error ? error.message : 'Failed to update coins', 'error')
+        setStatusMessage(status, error instanceof Error ? error.message : 'Failed to update pieces', 'error')
       } finally {
         buttons.forEach((item) => {
           item.disabled = false
@@ -354,12 +385,23 @@ function setupCoinTestControls(root: HTMLElement, auth: AuthMeResponse | null): 
   })
 }
 
-function mountArcade(root: HTMLElement, auth: AuthMeResponse | null): void {
+function mountArcade(root: HTMLElement, auth: AuthMeResponse | null, apiPuzzles: ArcadeApiPuzzle[]): void {
   root.innerHTML = ''
-  root.appendChild(buildArcadePage(auth))
+  root.appendChild(buildArcadePage(auth, apiPuzzles))
   setupLikes(root)
-  setupCoinTestControls(root, auth)
-  setupAdminGrant(root, auth)
+  setupPieceTestControls(root, auth)
+  setupCreatorArcadeForm(root, auth)
+}
+
+async function fetchArcadePuzzles(): Promise<ArcadeApiPuzzle[]> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/arcade/puzzles`, { credentials: 'include' })
+    if (!response.ok) return []
+    const data = (await response.json()) as { puzzles?: ArcadeApiPuzzle[] }
+    return Array.isArray(data.puzzles) ? data.puzzles : []
+  } catch {
+    return []
+  }
 }
 
 async function fetchAuthState(): Promise<AuthMeResponse | null> {
@@ -373,10 +415,10 @@ async function fetchAuthState(): Promise<AuthMeResponse | null> {
 }
 
 export function initArcade(root: HTMLElement): void {
-  mountArcade(root, null)
-  const hydrateAuth = async (): Promise<void> => {
-    const auth = await fetchAuthState()
-    mountArcade(root, auth)
+  mountArcade(root, null, [])
+  const hydrate = async (): Promise<void> => {
+    const [auth, puzzles] = await Promise.all([fetchAuthState(), fetchArcadePuzzles()])
+    mountArcade(root, auth, puzzles)
   }
-  void hydrateAuth()
+  void hydrate()
 }
