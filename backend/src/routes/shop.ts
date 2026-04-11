@@ -18,7 +18,7 @@ export function registerShopRoutes(app: express.Express, context: RouteContext):
 			}
 
 			const result = await purchaseShopItem(sessionData.session.user.id, itemId)
-			if (!result.success) {
+			if (result.success === false) {
 				if (result.error === 'unknown_item') {
 					res.status(400).json({ error: 'unknown_item', message: 'Unknown shop item' })
 					return

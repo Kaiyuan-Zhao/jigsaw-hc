@@ -49,7 +49,7 @@ export function registerArcadeRoutes(app: express.Express, context: RouteContext
 				gameUrl: body.gameUrl,
 				authorLabel,
 			})
-			if (!result.ok) {
+			if (result.ok === false) {
 				if (result.error === 'invalid_input') {
 					res.status(400).json({ error: 'Invalid puzzleId or title' })
 					return
@@ -80,7 +80,7 @@ export function registerArcadeRoutes(app: express.Express, context: RouteContext
 			}
 
 			const result = await applyArcadeUpvote(sessionData.session.user.id, puzzleId)
-			if (!result.ok) {
+			if (result.ok === false) {
 				if (result.error === 'unknown_puzzle') {
 					res.status(404).json({ error: 'Unknown puzzle' })
 					return
