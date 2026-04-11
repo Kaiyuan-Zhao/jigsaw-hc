@@ -227,7 +227,7 @@ function buildCreator(): HTMLElement {
         <div class="j-code-content">
           <div><span class="j-code-comment">// Lightweight solve crediting snippet</span></div>
           <div>
-            &lt;<span class="j-code-fn">script</span> <span class="j-code-prop">src</span>=<span class="j-code-str">"https://api.yourdomain.com/games/sdk.js"</span> <span class="j-code-prop">defer</span>&gt;&lt;/<span class="j-code-fn">script</span>&gt;
+            &lt;<span class="j-code-fn">script</span> <span class="j-code-prop">src</span>=<span class="j-code-str">"https://yourdomain.com/api/games/sdk.js"</span> <span class="j-code-prop">defer</span>&gt;&lt;/<span class="j-code-fn">script</span>&gt;
           </div>
           <div>
             &lt;<span class="j-code-fn">button</span> <span class="j-code-prop">data-jigsaw-win</span> <span class="j-code-prop">data-puzzle-id</span>=<span class="j-code-str">"YOUR_ID"</span>&gt;win&lt;/<span class="j-code-fn">button</span>&gt;

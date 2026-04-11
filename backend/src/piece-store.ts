@@ -1,6 +1,12 @@
-import fs from 'node:fs'
-import path from 'node:path'
-import { DatabaseSync } from 'node:sqlite'
+import { getSupabase } from './supabase.js'
+
+function requireSupabase() {
+	const db = getSupabase()
+	if (!db) {
+		throw new Error('Supabase is not configured (set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in backend/.env)')
+	}
+	return db
+}
 
 type PieceGrantInput = {
 	targetUserId: string
@@ -15,174 +21,7 @@ type PuzzleRewardInput = {
 	reason?: string
 }
 
-const MAX_GRANT_HISTORY = 500
-
-const defaultDbPath = path.resolve(process.cwd(), 'data/pieces.sqlite')
-const configuredDbPath =
-	process.env.PIECE_DB_PATH?.trim() || process.env.COIN_DB_PATH?.trim() || defaultDbPath
-const resolvedDbPath = path.isAbsolute(configuredDbPath)
-	? configuredDbPath
-	: path.resolve(process.cwd(), configuredDbPath)
-
-fs.mkdirSync(path.dirname(resolvedDbPath), { recursive: true })
-
-const db = new DatabaseSync(resolvedDbPath)
-db.exec('PRAGMA journal_mode = WAL;')
-db.exec('PRAGMA foreign_keys = ON;')
-
-db.exec(`
-	CREATE TABLE IF NOT EXISTS piece_balances (
-		user_id TEXT PRIMARY KEY,
-		pieces INTEGER NOT NULL CHECK (pieces >= 0),
-		updated_at INTEGER NOT NULL
-	);
-
-	CREATE TABLE IF NOT EXISTS piece_grants (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		target_user_id TEXT NOT NULL,
-		amount INTEGER NOT NULL CHECK (amount > 0),
-		reason TEXT,
-		created_at INTEGER NOT NULL
-	);
-
-	CREATE TABLE IF NOT EXISTS puzzle_claims (
-		user_id TEXT NOT NULL,
-		puzzle_id TEXT NOT NULL,
-		created_at INTEGER NOT NULL,
-		PRIMARY KEY (user_id, puzzle_id)
-	);
-
-	CREATE TABLE IF NOT EXISTS shop_purchases (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		user_id TEXT NOT NULL,
-		item_id TEXT NOT NULL,
-		price_pieces INTEGER NOT NULL CHECK (price_pieces > 0),
-		title_snapshot TEXT NOT NULL,
-		created_at INTEGER NOT NULL,
-		fulfilled_at INTEGER
-	);
-
-	CREATE INDEX IF NOT EXISTS idx_shop_purchases_user ON shop_purchases (user_id, created_at DESC);
-
-	CREATE TABLE IF NOT EXISTS arcade_puzzles (
-		puzzle_id TEXT PRIMARY KEY,
-		creator_user_id TEXT NOT NULL,
-		title TEXT NOT NULL,
-		genre TEXT NOT NULL DEFAULT '',
-		thumbnail TEXT NOT NULL DEFAULT '',
-		game_url TEXT,
-		author_label TEXT NOT NULL DEFAULT '',
-		created_at INTEGER NOT NULL
-	);
-
-	CREATE TABLE IF NOT EXISTS arcade_upvotes (
-		puzzle_id TEXT NOT NULL,
-		voter_user_id TEXT NOT NULL,
-		created_at INTEGER NOT NULL,
-		PRIMARY KEY (puzzle_id, voter_user_id)
-	);
-
-	CREATE INDEX IF NOT EXISTS idx_arcade_upvotes_puzzle ON arcade_upvotes (puzzle_id);
-`)
-
-function migrateLegacyCoinTablesIfNeeded(): void {
-	const hasCoinBalances = Boolean(
-		db.prepare(`SELECT 1 FROM sqlite_master WHERE type='table' AND name='coin_balances'`).get()
-	)
-	if (!hasCoinBalances) return
-
-	db.exec('BEGIN IMMEDIATE')
-	try {
-		db.exec(`
-			INSERT OR REPLACE INTO piece_balances (user_id, pieces, updated_at)
-			SELECT user_id, coins, updated_at FROM coin_balances
-		`)
-		const hasCoinGrants = Boolean(
-			db.prepare(`SELECT 1 FROM sqlite_master WHERE type='table' AND name='coin_grants'`).get()
-		)
-		if (hasCoinGrants) {
-			db.exec(`
-				INSERT INTO piece_grants (target_user_id, amount, reason, created_at)
-				SELECT target_user_id, amount, reason, created_at FROM coin_grants
-			`)
-		}
-		db.exec('DROP TABLE IF EXISTS coin_grants')
-		db.exec('DROP TABLE IF EXISTS coin_balances')
-		db.exec('COMMIT')
-	} catch (error) {
-		db.exec('ROLLBACK')
-		throw error
-	}
-}
-
-migrateLegacyCoinTablesIfNeeded()
-
-const getBalanceStmt = db.prepare('SELECT pieces FROM piece_balances WHERE user_id = ?')
-const hasClaimStmt = db.prepare('SELECT 1 FROM puzzle_claims WHERE user_id = ? AND puzzle_id = ? LIMIT 1')
-const upsertBalanceStmt = db.prepare(`
-	INSERT INTO piece_balances (user_id, pieces, updated_at)
-	VALUES (?, ?, ?)
-	ON CONFLICT(user_id) DO UPDATE SET pieces = excluded.pieces, updated_at = excluded.updated_at
-`)
-const insertGrantStmt = db.prepare(`
-	INSERT INTO piece_grants (target_user_id, amount, reason, created_at)
-	VALUES (?, ?, ?, ?)
-`)
-const trimGrantHistoryStmt = db.prepare(`
-	DELETE FROM piece_grants
-	WHERE id NOT IN (
-		SELECT id FROM piece_grants
-		ORDER BY created_at DESC, id DESC
-		LIMIT ?
-	)
-`)
-const insertClaimStmt = db.prepare(
-	'INSERT OR IGNORE INTO puzzle_claims (user_id, puzzle_id, created_at) VALUES (?, ?, ?)'
-)
-const insertShopPurchaseStmt = db.prepare(`
-	INSERT INTO shop_purchases (user_id, item_id, price_pieces, title_snapshot, created_at)
-	VALUES (?, ?, ?, ?, ?)
-`)
-const lastInsertRowIdStmt = db.prepare('SELECT last_insert_rowid() AS id')
-
 const ARCADE_UPVOTE_PIECES_FOR_CREATOR = 2
-
-const getArcadePuzzleCreatorStmt = db.prepare(
-	'SELECT creator_user_id AS creatorUserId FROM arcade_puzzles WHERE puzzle_id = ? LIMIT 1'
-)
-const insertArcadePuzzleStmt = db.prepare(`
-	INSERT INTO arcade_puzzles (puzzle_id, creator_user_id, title, genre, thumbnail, game_url, author_label, created_at)
-	VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-`)
-const updateArcadePuzzleStmt = db.prepare(`
-	UPDATE arcade_puzzles
-	SET title = ?, genre = ?, thumbnail = ?, game_url = ?, author_label = ?
-	WHERE puzzle_id = ? AND creator_user_id = ?
-`)
-const listArcadePuzzlesStmt = db.prepare(`
-	SELECT
-		p.puzzle_id AS puzzleId,
-		p.creator_user_id AS creatorUserId,
-		p.title AS title,
-		p.genre AS genre,
-		p.thumbnail AS thumbnail,
-		p.game_url AS gameUrl,
-		p.author_label AS authorLabel,
-		p.created_at AS createdAt,
-		(SELECT COUNT(*) FROM arcade_upvotes u WHERE u.puzzle_id = p.puzzle_id) AS likeCount,
-		EXISTS (
-			SELECT 1 FROM arcade_upvotes v
-			WHERE v.puzzle_id = p.puzzle_id AND v.voter_user_id = ? AND length(?) > 0
-		) AS likedByMe
-	FROM arcade_puzzles p
-	ORDER BY p.created_at DESC
-`)
-const insertArcadeUpvoteStmt = db.prepare(
-	'INSERT OR IGNORE INTO arcade_upvotes (puzzle_id, voter_user_id, created_at) VALUES (?, ?, ?)'
-)
-const countArcadeUpvotesStmt = db.prepare(
-	'SELECT COUNT(*) AS c FROM arcade_upvotes WHERE puzzle_id = ?'
-)
 
 export type ArcadePuzzleListItem = {
 	puzzleId: string
@@ -230,119 +69,142 @@ export type ShopPurchaseResult =
 	| { success: false; error: 'unknown_item' }
 	| { success: false; error: 'insufficient_pieces'; pieces: number }
 
-function runInTransaction<T>(work: () => T): T {
-	db.exec('BEGIN IMMEDIATE')
-	try {
-		const result = work()
-		db.exec('COMMIT')
-		return result
-	} catch (error) {
-		db.exec('ROLLBACK')
-		throw error
-	}
+export function getPieceDbPath(): string {
+	return 'supabase'
 }
 
-function adjustUserPiecesInternal(targetUserId: string, delta: number): number {
+export async function getUserPieceBalance(userId: string): Promise<number> {
+	const supabase = getSupabase()
+	if (!supabase) return 0
+	const { data, error } = await supabase
+		.from('piece_balances')
+		.select('pieces')
+		.eq('user_id', userId)
+		.maybeSingle()
+	if (error) throw error
+	return Number(data?.pieces || 0)
+}
+
+export async function adjustUserPieces(targetUserId: string, delta: number): Promise<number> {
+	const supabase = requireSupabase()
 	const now = Date.now()
-	const row = getBalanceStmt.get(targetUserId) as { pieces: number } | undefined
-	const current = row?.pieces || 0
+	const current = await getUserPieceBalance(targetUserId)
 	const safeDelta = Math.floor(delta)
 	const nextBalance = Math.max(0, current + safeDelta)
-	upsertBalanceStmt.run(targetUserId, nextBalance, now)
-	return nextBalance
-}
-
-function grantPiecesInternal(input: PieceGrantInput): number {
-	const safeAmount = Math.floor(input.amount)
-	const nextBalance = adjustUserPiecesInternal(input.targetUserId, safeAmount)
-	insertGrantStmt.run(
-		input.targetUserId,
-		safeAmount,
-		input.reason || null,
-		Date.now()
+	const { error } = await supabase.from('piece_balances').upsert(
+		{
+			user_id: targetUserId,
+			pieces: nextBalance,
+			updated_at: now,
+		},
+		{ onConflict: 'user_id' }
 	)
-	trimGrantHistoryStmt.run(MAX_GRANT_HISTORY)
+	if (error) throw error
 	return nextBalance
 }
 
-function claimPuzzleRewardInternal(input: PuzzleRewardInput): number | null {
-	const existingClaim = hasClaimStmt.get(input.targetUserId, input.puzzleId)
-	if (existingClaim) return null
-
-	const nextBalance = grantPiecesInternal({
-		targetUserId: input.targetUserId,
-		amount: input.amount,
-		reason: input.reason,
-	})
-	insertClaimStmt.run(input.targetUserId, input.puzzleId, Date.now())
-	return nextBalance
-}
-
-export function getPieceDbPath(): string {
-	return resolvedDbPath
-}
-
-export function getUserPieceBalance(userId: string): number {
-	const row = getBalanceStmt.get(userId) as { pieces: number } | undefined
-	return row?.pieces || 0
-}
-
-export function adjustUserPieces(targetUserId: string, delta: number): number {
-	return runInTransaction(() => adjustUserPiecesInternal(targetUserId, delta))
-}
-
-export function grantPieces(
+export async function grantPieces(
 	targetUserId: string,
 	amount: number,
 	reason?: string
-): number {
-	return runInTransaction(() => grantPiecesInternal({targetUserId, amount, reason }))
+): Promise<number> {
+	const supabase = requireSupabase()
+	const safeAmount = Math.floor(amount)
+	const nextBalance = await adjustUserPieces(targetUserId, safeAmount)
+	const { error } = await supabase.from('piece_grants').insert({
+		target_user_id: targetUserId,
+		amount: safeAmount,
+		reason: reason || null,
+		created_at: Date.now(),
+	})
+	if (error) throw error
+	return nextBalance
 }
 
-export function hasPuzzleClaim(userId: string, puzzleId: string): boolean {
-	return Boolean(hasClaimStmt.get(userId, puzzleId))
+export async function hasPuzzleClaim(userId: string, puzzleId: string): Promise<boolean> {
+	const supabase = getSupabase()
+	if (!supabase) return false
+	const { data, error } = await supabase
+		.from('puzzle_claims')
+		.select('user_id')
+		.eq('user_id', userId)
+		.eq('puzzle_id', puzzleId)
+		.limit(1)
+		.maybeSingle()
+	if (error) throw error
+	return Boolean(data)
 }
 
-export function markPuzzleClaimed(userId: string, puzzleId: string): void {
-	insertClaimStmt.run(userId, puzzleId, Date.now())
+export async function markPuzzleClaimed(userId: string, puzzleId: string): Promise<void> {
+	const supabase = requireSupabase()
+	const { error } = await supabase.from('puzzle_claims').upsert(
+		{
+			user_id: userId,
+			puzzle_id: puzzleId,
+			created_at: Date.now(),
+		},
+		{ onConflict: 'user_id,puzzle_id' }
+	)
+	if (error) throw error
 }
 
-export function claimPuzzleReward(input: PuzzleRewardInput): number | null {
-	return runInTransaction(() => claimPuzzleRewardInternal(input))
+export async function claimPuzzleReward(input: PuzzleRewardInput): Promise<number | null> {
+	const supabase = requireSupabase()
+	const inserted = await supabase.from('puzzle_claims').insert({
+		user_id: input.targetUserId,
+		puzzle_id: input.puzzleId,
+		created_at: Date.now(),
+	})
+	if (inserted.error) {
+		if (inserted.error.code === '23505') return null
+		throw inserted.error
+	}
+	return grantPieces(input.targetUserId, input.amount, input.reason)
 }
 
-export function listArcadePuzzles(voterUserId?: string): ArcadePuzzleListItem[] {
+export async function listArcadePuzzles(voterUserId?: string): Promise<ArcadePuzzleListItem[]> {
+	const supabase = getSupabase()
+	if (!supabase) return []
 	const voter = (voterUserId || '').trim()
-	const rows = listArcadePuzzlesStmt.all(voter, voter) as Array<{
-		puzzleId: string
-		creatorUserId: string
-		title: string
-		genre: string
-		thumbnail: string
-		gameUrl: string | null
-		authorLabel: string
-		createdAt: number
-		likeCount: number
-		likedByMe: number | boolean
-	}>
-	return rows.map((r) => ({
-		puzzleId: r.puzzleId,
-		creatorUserId: r.creatorUserId,
-		title: r.title,
-		genre: r.genre,
-		thumbnail: r.thumbnail,
-		gameUrl: r.gameUrl,
-		authorLabel: r.authorLabel,
-		createdAt: r.createdAt,
-		likeCount: Number(r.likeCount) || 0,
-		likedByMe: Boolean(r.likedByMe),
+	const { data: puzzleRows, error: puzzleError } = await supabase
+		.from('arcade_puzzles')
+		.select('puzzle_id,creator_user_id,title,genre,thumbnail,game_url,author_label,created_at')
+		.order('created_at', { ascending: false })
+	if (puzzleError) throw puzzleError
+	const puzzleIds = (puzzleRows || []).map((row) => row.puzzle_id)
+	const likeCountByPuzzle = new Map<string, number>()
+	const likedByMe = new Set<string>()
+	if (puzzleIds.length > 0) {
+		const { data: upvoteRows, error: upvoteError } = await supabase
+			.from('arcade_upvotes')
+			.select('puzzle_id,voter_user_id')
+			.in('puzzle_id', puzzleIds)
+		if (upvoteError) throw upvoteError
+		for (const row of upvoteRows || []) {
+			likeCountByPuzzle.set(row.puzzle_id, (likeCountByPuzzle.get(row.puzzle_id) || 0) + 1)
+			if (voter && row.voter_user_id === voter) {
+				likedByMe.add(row.puzzle_id)
+			}
+		}
+	}
+	return (puzzleRows || []).map((row) => ({
+		puzzleId: row.puzzle_id,
+		creatorUserId: row.creator_user_id,
+		title: row.title,
+		genre: row.genre || '',
+		thumbnail: row.thumbnail || '',
+		gameUrl: row.game_url,
+		authorLabel: row.author_label || 'Creator',
+		createdAt: Number(row.created_at) || Date.now(),
+		likeCount: likeCountByPuzzle.get(row.puzzle_id) || 0,
+		likedByMe: likedByMe.has(row.puzzle_id),
 	}))
 }
 
-export function registerOrUpdateArcadePuzzle(
+export async function registerOrUpdateArcadePuzzle(
 	creatorUserId: string,
 	input: RegisterArcadePuzzleInput
-): { ok: true } | { ok: false; error: 'puzzle_id_taken' | 'invalid_input' } {
+): Promise<{ ok: true } | { ok: false; error: 'puzzle_id_taken' | 'invalid_input' }> {
 	const puzzleId = input.puzzleId.trim()
 	const title = input.title.trim()
 	if (!puzzleId || puzzleId.length > 200 || !title) {
@@ -354,83 +216,115 @@ export function registerOrUpdateArcadePuzzle(
 	const gameUrl = gameUrlRaw ? gameUrlRaw : null
 	const authorLabel = (input.authorLabel || '').trim() || 'Creator'
 
-	return runInTransaction(() => {
-		const existing = getArcadePuzzleCreatorStmt.get(puzzleId) as { creatorUserId: string } | undefined
-		if (existing && existing.creatorUserId !== creatorUserId) {
-			return { ok: false, error: 'puzzle_id_taken' as const }
-		}
-		const now = Date.now()
-		if (!existing) {
-			insertArcadePuzzleStmt.run(puzzleId, creatorUserId, title, genre, thumbnail, gameUrl, authorLabel, now)
-		} else {
-			updateArcadePuzzleStmt.run(title, genre, thumbnail, gameUrl, authorLabel, puzzleId, creatorUserId)
-		}
-		return { ok: true as const }
-	})
+	const supabase = requireSupabase()
+	const { data: existing, error: existingError } = await supabase
+		.from('arcade_puzzles')
+		.select('creator_user_id')
+		.eq('puzzle_id', puzzleId)
+		.maybeSingle()
+	if (existingError) throw existingError
+	if (existing && existing.creator_user_id !== creatorUserId) {
+		return { ok: false, error: 'puzzle_id_taken' }
+	}
+
+	if (!existing) {
+		const { error } = await supabase.from('arcade_puzzles').insert({
+			puzzle_id: puzzleId,
+			creator_user_id: creatorUserId,
+			title,
+			genre,
+			thumbnail,
+			game_url: gameUrl,
+			author_label: authorLabel,
+			created_at: Date.now(),
+		})
+		if (error) throw error
+		return { ok: true }
+	}
+
+	const { error } = await supabase
+		.from('arcade_puzzles')
+		.update({
+			title,
+			genre,
+			thumbnail,
+			game_url: gameUrl,
+			author_label: authorLabel,
+		})
+		.eq('puzzle_id', puzzleId)
+		.eq('creator_user_id', creatorUserId)
+	if (error) throw error
+	return { ok: true }
 }
 
-export function applyArcadeUpvote(voterUserId: string, puzzleId: string): ArcadeUpvoteResult {
+export async function applyArcadeUpvote(voterUserId: string, puzzleId: string): Promise<ArcadeUpvoteResult> {
 	const id = puzzleId.trim()
 	if (!id) {
 		return { ok: false, error: 'unknown_puzzle' }
 	}
-	return runInTransaction(() => {
-		const row = getArcadePuzzleCreatorStmt.get(id) as { creatorUserId: string } | undefined
-		if (!row) {
-			return { ok: false, error: 'unknown_puzzle' as const }
-		}
-		if (row.creatorUserId === voterUserId) {
-			return { ok: false, error: 'self_upvote' as const }
-		}
-		const now = Date.now()
-		const runResult = insertArcadeUpvoteStmt.run(id, voterUserId, now) as { changes?: number }
-		const newUpvote = Number(runResult.changes) > 0
-		if (newUpvote) {
-			grantPiecesInternal({
-				targetUserId: row.creatorUserId,
-				amount: ARCADE_UPVOTE_PIECES_FOR_CREATOR,
-				reason: `Arcade upvote:${id}:voter=${voterUserId}`,
-			})
-		}
-		const countRow = countArcadeUpvotesStmt.get(id) as { c: number } | undefined
-		const likeCount = Number(countRow?.c) || 0
-		return { ok: true, newUpvote, likeCount }
+
+	const supabase = requireSupabase()
+	const { data: row, error: rowError } = await supabase
+		.from('arcade_puzzles')
+		.select('creator_user_id')
+		.eq('puzzle_id', id)
+		.maybeSingle()
+	if (rowError) throw rowError
+	if (!row) return { ok: false, error: 'unknown_puzzle' }
+	if (row.creator_user_id === voterUserId) return { ok: false, error: 'self_upvote' }
+
+	const inserted = await supabase.from('arcade_upvotes').insert({
+		puzzle_id: id,
+		voter_user_id: voterUserId,
+		created_at: Date.now(),
 	})
+	const newUpvote = !inserted.error
+	if (inserted.error && inserted.error.code !== '23505') throw inserted.error
+	if (newUpvote) {
+		await grantPieces(
+			row.creator_user_id,
+			ARCADE_UPVOTE_PIECES_FOR_CREATOR,
+			`Arcade upvote:${id}:voter=${voterUserId}`
+		)
+	}
+	const { count, error: countError } = await supabase
+		.from('arcade_upvotes')
+		.select('puzzle_id', { count: 'exact', head: true })
+		.eq('puzzle_id', id)
+	if (countError) throw countError
+	return { ok: true, newUpvote, likeCount: Number(count || 0) }
 }
 
-function purchaseShopItemInternal(
-	userId: string,
-	itemId: string,
-	catalog: { pricePieces: number; title: string }
-): ShopPurchaseResult {
-	const row = getBalanceStmt.get(userId) as { pieces: number } | undefined
-	const balance = row?.pieces ?? 0
-	if (balance < catalog.pricePieces) {
-		return { success: false, error: 'insufficient_pieces', pieces: balance }
-	}
-
-	const nextBalance = adjustUserPiecesInternal(userId, -catalog.pricePieces)
-	const now = Date.now()
-	insertShopPurchaseStmt.run(userId, itemId, catalog.pricePieces, catalog.title, now)
-	const lastRow = lastInsertRowIdStmt.get() as { id: number | bigint }
-	const purchaseId = Number(lastRow.id)
-
-	return {
-		success: true,
-		purchaseId,
-		balance: nextBalance,
-		itemId,
-		pricePieces: catalog.pricePieces,
-		title: catalog.title,
-	}
-}
-
-export function purchaseShopItem(userId: string, rawItemId: string): ShopPurchaseResult {
+export async function purchaseShopItem(userId: string, rawItemId: string): Promise<ShopPurchaseResult> {
 	const itemId = rawItemId.trim()
 	const catalog = SHOP_CATALOG[itemId]
 	if (!catalog) {
 		return { success: false, error: 'unknown_item' }
 	}
-
-	return runInTransaction(() => purchaseShopItemInternal(userId, itemId, catalog))
+	const balance = await getUserPieceBalance(userId)
+	if (balance < catalog.pricePieces) {
+		return { success: false, error: 'insufficient_pieces', pieces: balance }
+	}
+	const supabase = requireSupabase()
+	const nextBalance = await adjustUserPieces(userId, -catalog.pricePieces)
+	const { data, error } = await supabase
+		.from('shop_purchases')
+		.insert({
+			user_id: userId,
+			item_id: itemId,
+			price_pieces: catalog.pricePieces,
+			title_snapshot: catalog.title,
+			created_at: Date.now(),
+		})
+		.select('id')
+		.single()
+	if (error) throw error
+	return {
+		success: true,
+		purchaseId: Number(data.id),
+		balance: nextBalance,
+		itemId,
+		pricePieces: catalog.pricePieces,
+		title: catalog.title,
+	}
 }

@@ -14,12 +14,12 @@ const GAME_ALLOWED_ORIGINS = (process.env.GAME_ALLOWED_ORIGINS || 'http://localh
 	.split(',')
 	.map((value) => value.trim())
 	.filter(Boolean)
-const ALLOWED_CORS_ORIGINS = new Set([FRONTEND_URL, ...GAME_ALLOWED_ORIGINS])
 const CLAIM_TOKEN_SECRET = process.env.CLAIM_TOKEN_SECRET || SESSION_SECRET
 const CLAIM_TOKEN_TTL_SECONDS = Math.max(30, Number(process.env.CLAIM_TOKEN_TTL_SECONDS || 180))
+const SUPABASE_URL = process.env.SUPABASE_URL || ''
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 
 export {
-	ALLOWED_CORS_ORIGINS,
 	CLAIM_TOKEN_SECRET,
 	CLAIM_TOKEN_TTL_SECONDS,
 	CLIENT_ID,
@@ -35,4 +35,6 @@ export {
 	SCOPES,
 	SESSION_SECRET,
 	SESSION_TTL_MS,
+	SUPABASE_SERVICE_ROLE_KEY,
+	SUPABASE_URL,
 }

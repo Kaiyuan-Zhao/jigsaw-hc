@@ -14,12 +14,8 @@ import {
 	SESSION_COOKIE,
 	buildSessionCookieOptions,
 	clearSessionCookieOptions,
-	createSession,
-	deleteSession,
-	getSession,
-	updateSession,
+	createSignedSessionCookieValue,
 } from '../auth/session.js'
-import { signSessionValue } from '../auth/session.js'
 import { getUserPieceBalance } from '../piece-store.js'
 import type { RouteContext } from './context.js'
 
@@ -54,14 +50,14 @@ export function registerAuthRoutes(app: express.Express, context: RouteContext):
 				verificationStatus: identity.verification_status,
 			}
 
-			const sessionId = createSession({
+			const signedSession = createSignedSessionCookieValue({
 				accessToken: tokens.access_token,
 				refreshToken: tokens.refresh_token,
 				expiresInSeconds: tokens.expires_in,
 				user,
 			})
 
-			res.cookie(SESSION_COOKIE, signSessionValue(sessionId), buildSessionCookieOptions())
+			res.cookie(SESSION_COOKIE, signedSession, buildSessionCookieOptions())
 			res.redirect(`${FRONTEND_URL}/?auth=success`)
 		} catch (error) {
 			console.error('[oauth] callback error', error)
@@ -70,46 +66,55 @@ export function registerAuthRoutes(app: express.Express, context: RouteContext):
 	})
 
 	app.get('/auth/me', async (req, res) => {
-		const sessionData = context.getSessionFromRequest(req)
-		if (!sessionData) {
-			res.json({ authenticated: false })
-			return
-		}
-
-		const { id, session } = sessionData
-		if (Date.now() > session.tokenExpiresAt && session.refreshToken) {
-			try {
-				const refreshed = await refreshAccessToken(session.refreshToken)
-				updateSession(id, {
-					...session,
-					accessToken: refreshed.access_token,
-					refreshToken: refreshed.refresh_token || session.refreshToken,
-					tokenExpiresAt: Date.now() + refreshed.expires_in * 1000,
-				})
-			} catch (error) {
-				console.error('[oauth] refresh failed', error)
-				deleteSession(id)
-				res.clearCookie(SESSION_COOKIE, clearSessionCookieOptions())
+		try {
+			const sessionData = context.getSessionFromRequest(req)
+			if (!sessionData) {
 				res.json({ authenticated: false })
 				return
 			}
-		}
 
-		const updated = getSession(id) || session
-		res.json({
-			authenticated: true,
-			user: {
-				...updated.user,
-				pieces: getUserPieceBalance(updated.user.id),
-			},
-		})
+			let session = sessionData.session
+			if (Date.now() > session.tokenExpiresAt && session.refreshToken) {
+				try {
+					const refreshed = await refreshAccessToken(session.refreshToken)
+					session = {
+						...session,
+						accessToken: refreshed.access_token,
+						refreshToken: refreshed.refresh_token || session.refreshToken,
+						tokenExpiresAt: Date.now() + refreshed.expires_in * 1000,
+					}
+					res.cookie(
+						SESSION_COOKIE,
+						createSignedSessionCookieValue({
+							accessToken: session.accessToken,
+							refreshToken: session.refreshToken,
+							expiresInSeconds: Math.max(30, Math.ceil((session.tokenExpiresAt - Date.now()) / 1000)),
+							user: session.user,
+						}),
+						buildSessionCookieOptions()
+					)
+				} catch (error) {
+					console.error('[oauth] refresh failed', error)
+					res.clearCookie(SESSION_COOKIE, clearSessionCookieOptions())
+					res.json({ authenticated: false })
+					return
+				}
+			}
+
+			res.json({
+				authenticated: true,
+				user: {
+					...session.user,
+					pieces: await getUserPieceBalance(session.user.id),
+				},
+			})
+		} catch (error) {
+			console.error('[auth] failed to fetch current user', error)
+			res.status(500).json({ authenticated: false })
+		}
 	})
 
 	app.post('/auth/logout', (req, res) => {
-		const sessionData = context.getSessionFromRequest(req)
-		if (sessionData) {
-			deleteSession(sessionData.id)
-		}
 		res.clearCookie(SESSION_COOKIE, clearSessionCookieOptions())
 		res.json({ success: true })
 	})

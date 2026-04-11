@@ -51,85 +51,95 @@ export function registerGameRoutes(app: express.Express, context: RouteContext):
 	</script></body></html>`)
 	})
 
-	app.post('/games/reward-ticket', (req, res) => {
-		const sessionData = context.getSessionFromRequest(req)
-		if (!sessionData) {
-			res.status(401).json({ error: 'Unauthorized' })
-			return
-		}
+	app.post('/games/reward-ticket', async (req, res) => {
+		try {
+			const sessionData = context.getSessionFromRequest(req)
+			if (!sessionData) {
+				res.status(401).json({ error: 'Unauthorized' })
+				return
+			}
 
-		const { puzzleId } = (req.body || {}) as { puzzleId?: string }
-		const normalizedPuzzleId = String(puzzleId || '').trim()
-		if (!normalizedPuzzleId) {
-			res.status(400).json({ error: 'puzzleId is required' })
-			return
-		}
+			const { puzzleId } = (req.body || {}) as { puzzleId?: string }
+			const normalizedPuzzleId = String(puzzleId || '').trim()
+			if (!normalizedPuzzleId) {
+				res.status(400).json({ error: 'puzzleId is required' })
+				return
+			}
 
-		const userId = sessionData.session.user.id
-		if (hasPuzzleClaim(userId, normalizedPuzzleId)) {
-			res.status(409).json({ error: 'Puzzle reward already claimed' })
-			return
-		}
+			const userId = sessionData.session.user.id
+			if (await hasPuzzleClaim(userId, normalizedPuzzleId)) {
+				res.status(409).json({ error: 'Puzzle reward already claimed' })
+				return
+			}
 
-		const record = createRewardTicket(userId, normalizedPuzzleId)
-		res.json({
-			ticket: record.ticket,
-			puzzleId: record.puzzleId,
-			amount: record.amount,
-			expiresAt: record.expiresAt,
-		})
+			const record = createRewardTicket(userId, normalizedPuzzleId)
+			res.json({
+				ticket: record.ticket,
+				puzzleId: record.puzzleId,
+				amount: record.amount,
+				expiresAt: record.expiresAt,
+			})
+		} catch (error) {
+			console.error('[games] failed to create reward ticket', error)
+			res.status(500).json({ error: 'Failed to create reward ticket' })
+		}
 	})
 
-	app.post('/games/redeem-ticket', (req, res) => {
-		const { ticket } = (req.body || {}) as { ticket?: string }
-		const normalizedTicket = String(ticket || '').trim()
-		if (!normalizedTicket) {
-			res.status(400).json({ error: 'ticket is required' })
-			return
-		}
+	app.post('/games/redeem-ticket', async (req, res) => {
+		try {
+			const { ticket } = (req.body || {}) as { ticket?: string }
+			const normalizedTicket = String(ticket || '').trim()
+			if (!normalizedTicket) {
+				res.status(400).json({ error: 'ticket is required' })
+				return
+			}
 
-		const record = getRewardTicket(normalizedTicket)
-		if (!record) {
-			res.status(404).json({ error: 'Invalid ticket' })
-			return
-		}
+			const record = getRewardTicket(normalizedTicket)
+			if (!record) {
+				res.status(404).json({ error: 'Invalid ticket' })
+				return
+			}
 
-		if (record.usedAt) {
-			res.status(409).json({ error: 'Ticket already used' })
-			return
-		}
+			if (record.usedAt) {
+				res.status(409).json({ error: 'Ticket already used' })
+				return
+			}
 
-		if (record.expiresAt < Date.now()) {
-			deleteRewardTicket(normalizedTicket)
-			res.status(410).json({ error: 'Ticket expired' })
-			return
-		}
+			if (record.expiresAt < Date.now()) {
+				deleteRewardTicket(normalizedTicket)
+				res.status(410).json({ error: 'Ticket expired' })
+				return
+			}
 
-		if (hasPuzzleClaim(record.userId, record.puzzleId)) {
+			if (await hasPuzzleClaim(record.userId, record.puzzleId)) {
+				markRewardTicketUsed(normalizedTicket)
+				res.status(409).json({ error: 'Puzzle reward already claimed' })
+				return
+			}
+
+			const nextBalance = await claimPuzzleReward({
+				targetUserId: record.userId,
+				puzzleId: record.puzzleId,
+				amount: record.amount,
+				reason: `Puzzle reward:${record.puzzleId}`,
+			})
 			markRewardTicketUsed(normalizedTicket)
-			res.status(409).json({ error: 'Puzzle reward already claimed' })
-			return
-		}
+			if (nextBalance === null) {
+				res.status(409).json({ error: 'Puzzle reward already claimed' })
+				return
+			}
 
-		const nextBalance = claimPuzzleReward({
-			targetUserId: record.userId,
-			puzzleId: record.puzzleId,
-			amount: record.amount,
-			reason: `Puzzle reward:${record.puzzleId}`,
-		})
-		markRewardTicketUsed(normalizedTicket)
-		if (nextBalance === null) {
-			res.status(409).json({ error: 'Puzzle reward already claimed' })
-			return
+			res.json({
+				success: true,
+				userId: record.userId,
+				puzzleId: record.puzzleId,
+				amount: record.amount,
+				pieces: nextBalance,
+			})
+		} catch (error) {
+			console.error('[games] failed to redeem reward ticket', error)
+			res.status(500).json({ error: 'Failed to redeem ticket' })
 		}
-
-		res.json({
-			success: true,
-			userId: record.userId,
-			puzzleId: record.puzzleId,
-			amount: record.amount,
-			pieces: nextBalance,
-		})
 	})
 
 	app.post('/games/claim-token', (req, res) => {
@@ -164,61 +174,66 @@ export function registerGameRoutes(app: express.Express, context: RouteContext):
 		})
 	})
 
-	app.post('/games/redeem-token', (req, res) => {
-		const { token, puzzleId } = (req.body || {}) as { token?: string; puzzleId?: string }
-		const normalizedToken = String(token || '').trim()
-		const normalizedPuzzleId = String(puzzleId || '').trim()
-		if (!normalizedToken) {
-			res.status(400).json({ error: 'token is required' })
-			return
-		}
-		if (!normalizedPuzzleId) {
-			res.status(400).json({ error: 'puzzleId is required' })
-			return
-		}
+	app.post('/games/redeem-token', async (req, res) => {
+		try {
+			const { token, puzzleId } = (req.body || {}) as { token?: string; puzzleId?: string }
+			const normalizedToken = String(token || '').trim()
+			const normalizedPuzzleId = String(puzzleId || '').trim()
+			if (!normalizedToken) {
+				res.status(400).json({ error: 'token is required' })
+				return
+			}
+			if (!normalizedPuzzleId) {
+				res.status(400).json({ error: 'puzzleId is required' })
+				return
+			}
 
-		const payload = verifyClaimToken(normalizedToken)
-		if (!payload) {
-			res.status(401).json({ error: 'Invalid or expired token' })
-			return
-		}
+			const payload = verifyClaimToken(normalizedToken)
+			if (!payload) {
+				res.status(401).json({ error: 'Invalid or expired token' })
+				return
+			}
 
-		const requestOrigin = String(req.get('origin') || '').trim()
-		if (!requestOrigin || requestOrigin !== payload.aud) {
-			res.status(403).json({ error: 'Origin mismatch' })
-			return
-		}
-		if (!GAME_ALLOWED_ORIGINS.includes(requestOrigin)) {
-			res.status(403).json({ error: 'Origin not allowed' })
-			return
-		}
-		if (hasUsedClaimToken(payload.jti)) {
-			res.status(409).json({ error: 'Token already used' })
-			return
-		}
-		if (hasPuzzleClaim(payload.sub, normalizedPuzzleId)) {
+			const requestOrigin = String(req.get('origin') || '').trim()
+			if (!requestOrigin || requestOrigin !== payload.aud) {
+				res.status(403).json({ error: 'Origin mismatch' })
+				return
+			}
+			if (!GAME_ALLOWED_ORIGINS.includes(requestOrigin)) {
+				res.status(403).json({ error: 'Origin not allowed' })
+				return
+			}
+			if (hasUsedClaimToken(payload.jti)) {
+				res.status(409).json({ error: 'Token already used' })
+				return
+			}
+			if (await hasPuzzleClaim(payload.sub, normalizedPuzzleId)) {
+				markClaimTokenUsed(payload.jti)
+				res.status(409).json({ error: 'Puzzle reward already claimed' })
+				return
+			}
+
 			markClaimTokenUsed(payload.jti)
-			res.status(409).json({ error: 'Puzzle reward already claimed' })
-			return
+			const nextBalance = await claimPuzzleReward({
+				targetUserId: payload.sub,
+				puzzleId: normalizedPuzzleId,
+				amount: REWARD_AMOUNT,
+				reason: `Puzzle reward:${normalizedPuzzleId}`,
+			})
+			if (nextBalance === null) {
+				res.status(409).json({ error: 'Puzzle reward already claimed' })
+				return
+			}
+			res.json({
+				success: true,
+				userId: payload.sub,
+				puzzleId: normalizedPuzzleId,
+				amount: REWARD_AMOUNT,
+				pieces: nextBalance,
+			})
+		} catch (error) {
+			console.error('[games] failed to redeem claim token', error)
+			res.status(500).json({ error: 'Failed to redeem token' })
 		}
-
-		markClaimTokenUsed(payload.jti)
-		const nextBalance = claimPuzzleReward({
-			targetUserId: payload.sub,
-			puzzleId: normalizedPuzzleId,
-			amount: REWARD_AMOUNT,
-			reason: `Puzzle reward:${normalizedPuzzleId}`,
-		})
-		if (nextBalance === null) {
-			res.status(409).json({ error: 'Puzzle reward already claimed' })
-			return
-		}
-		res.json({
-			success: true,
-			userId: payload.sub,
-			puzzleId: normalizedPuzzleId,
-			amount: REWARD_AMOUNT,
-			pieces: nextBalance,
-		})
 	})
 }

@@ -5,75 +5,65 @@ import type { SessionRecord, SessionUser } from './types.js'
 
 export const SESSION_COOKIE = 'jigsaw_session'
 
-const sessions = new Map<string, SessionRecord>()
-
-export function signSessionValue(sessionId: string): string {
-	const signature = crypto.createHmac('sha256', SESSION_SECRET).update(sessionId).digest('hex')
-	return `${sessionId}.${signature}`
+function createSignature(payload: string): string {
+	return crypto.createHmac('sha256', SESSION_SECRET).update(payload).digest('base64url')
 }
 
-function verifySessionValue(raw: string): string | null {
+function signSessionValue(session: SessionRecord): string {
+	const payload = Buffer.from(JSON.stringify(session)).toString('base64url')
+	return `${payload}.${createSignature(payload)}`
+}
+
+function parseSessionValue(raw: string): SessionRecord | null {
 	const parts = raw.split('.')
 	if (parts.length !== 2) return null
-	const [sessionId, signature] = parts
-	const expected = crypto.createHmac('sha256', SESSION_SECRET).update(sessionId).digest('hex')
+	const [payload, signature] = parts
+	const expected = createSignature(payload)
 	const sigBuf = Buffer.from(signature)
 	const expBuf = Buffer.from(expected)
 	if (sigBuf.length !== expBuf.length) return null
 	if (!crypto.timingSafeEqual(sigBuf, expBuf)) return null
-	return sessionId
+	try {
+		const parsed = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8')) as SessionRecord
+		if (!parsed || typeof parsed !== 'object') return null
+		if (typeof parsed.expiresAt !== 'number' || parsed.expiresAt < Date.now()) return null
+		return parsed
+	} catch {
+		return null
+	}
 }
 
 export function getSessionFromRequest(req: express.Request): { id: string; session: SessionRecord } | null {
 	const signedSession = req.cookies?.[SESSION_COOKIE] as string | undefined
 	if (!signedSession) return null
-	const sessionId = verifySessionValue(signedSession)
-	if (!sessionId) return null
-	const session = sessions.get(sessionId)
+	const session = parseSessionValue(signedSession)
 	if (!session) return null
-	if (session.expiresAt < Date.now()) {
-		sessions.delete(sessionId)
-		return null
-	}
-	return { id: sessionId, session }
+	return { id: 'cookie', session }
 }
 
-export function createSession(input: {
+export function createSignedSessionCookieValue(input: {
 	accessToken: string
 	refreshToken?: string
 	expiresInSeconds: number
 	user: SessionUser
 }): string {
 	const now = Date.now()
-	const sessionId = crypto.randomUUID()
-	sessions.set(sessionId, {
+	const session: SessionRecord = {
 		createdAt: now,
 		expiresAt: now + SESSION_TTL_MS,
 		accessToken: input.accessToken,
 		refreshToken: input.refreshToken,
 		tokenExpiresAt: now + input.expiresInSeconds * 1000,
 		user: input.user,
-	})
-	return sessionId
-}
-
-export function updateSession(id: string, next: SessionRecord): void {
-	sessions.set(id, next)
-}
-
-export function getSession(id: string): SessionRecord | undefined {
-	return sessions.get(id)
-}
-
-export function deleteSession(id: string): void {
-	sessions.delete(id)
+	}
+	return signSessionValue(session)
 }
 
 function sessionCookieBaseOptions() {
 	if (IS_PROD) {
 		return {
 			httpOnly: true as const,
-			sameSite: 'none' as const,
+			sameSite: 'lax' as const,
 			secure: true as const,
 			path: '/' as const,
 		}
@@ -95,13 +85,4 @@ export function buildSessionCookieOptions() {
 
 export function clearSessionCookieOptions() {
 	return sessionCookieBaseOptions()
-}
-
-export function cleanupExpiredSessions(): void {
-	const now = Date.now()
-	for (const [id, session] of sessions.entries()) {
-		if (session.expiresAt < now) {
-			sessions.delete(id)
-		}
-	}
 }
