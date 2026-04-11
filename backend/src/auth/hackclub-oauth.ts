@@ -7,13 +7,12 @@ import {
 } from '../config.js'
 import type { HackClubMeResponse, OAuthTokenResponse } from './types.js'
 
-export function createAuthorizationUrl(state: string): string {
+export function createAuthorizationUrl(): string {
 	const params = new URLSearchParams({
 		client_id: CLIENT_ID,
 		redirect_uri: REDIRECT_URI,
 		response_type: 'code',
 		scope: SCOPES,
-		state,
 	})
 	return `${HCAUTH_URL}/oauth/authorize?${params.toString()}`
 }

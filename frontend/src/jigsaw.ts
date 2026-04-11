@@ -94,7 +94,7 @@ function buildHero(): HTMLElement {
     <div class="j-hero-title-wrap">
       <h1 class="j-hero-title">Jigsaw</h1>
       <div class="j-hero-spinner">
-        ${puzzleSVG({ fill: '#ffdfba', stroke: '#111827', top: 'tab', right: 'tab', bottom: 'tab', left: 'tab', cls: '' })}
+        ${puzzleSVG({ fill: '#ffdfba', stroke: '', top: 'tab', right: 'tab', bottom: 'tab', left: 'tab', cls: '' })}
       </div>
     </div>
     <p class="j-hero-subtitle">Ship puzzles, solve puzzles, win puzzles!</p>
@@ -119,23 +119,23 @@ interface Principle {
 
 const PRINCIPLES: Principle[] = [
   {
-    icon: 'mousePointer',
+    icon: 'brain',
     title: 'Clever',
-    desc: 'Brute-force-proof!',
+    desc: 'frustratingly stumped becomes elegantly simple.',
     fill: '#baffc9',
     notch: { top: 'flat', right: 'tab', bottom: 'hole', left: 'flat' },
     startX: -420, startY: -200, startRot: -45,
   },
   {
-    icon: 'globe',
-    title: 'Solvable',
-    desc: 'Credits solves (see #docs!)',
+    icon: 'trophy',
+    title: 'Open & Solvable',
+    desc: 'Open sourced and hosted live! Credits solves (see #docs)',
     fill: '#ffb3ba',
     notch: { top: 'flat', right: 'flat', bottom: 'tab', left: 'hole' },
     startX: 420, startY: -160, startRot: 30,
   },
   {
-    icon: 'brain',
+    icon: 'mousePointer',
     title: 'Interactive',
     desc: 'Not just text riddles!',
     fill: '#bae1ff',
@@ -145,7 +145,7 @@ const PRINCIPLES: Principle[] = [
   {
     icon: 'star',
     title: 'Fun!',
-    desc: 'Brings joy',
+    desc: 'Most important!',
     fill: '#ffffba',
     notch: { top: 'hole', right: 'flat', bottom: 'flat', left: 'hole' },
     startX: 320, startY: 260, startRot: -20,
@@ -180,7 +180,7 @@ function buildPrinciples(): HTMLElement {
   <div class="j-principles-inner">
     <div class="j-section-header">
       <h2 class="j-section-title">
-        HOW TO PUZZLE?
+        GUIDE: Building Your Puzzle!
       </h2>
     </div>
     
@@ -188,7 +188,7 @@ function buildPrinciples(): HTMLElement {
       ${cards}
     </div>
       <h2 class="j-arcade-title">Check out the Arcade</h2>
-      <p class="j-arcade-subtitle">Where all the pieces come together</p>
+      <p class="j-arcade-subtitle">Where all these pieces come together</p>
       <a href="/arcade" class="j-arcade-cta">Enter the Arcade</a>
     </div>
 </section>`);

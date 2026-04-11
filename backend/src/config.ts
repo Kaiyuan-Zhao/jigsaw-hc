@@ -7,7 +7,6 @@ const REDIRECT_URI = process.env.HCAUTH_REDIRECT_URI || `http://localhost:${PORT
 const SCOPES = process.env.HCAUTH_SCOPES || 'openid profile email name slack_id verification_status'
 const SESSION_SECRET = process.env.SESSION_SECRET || 'dev-secret-change-me'
 const IS_PROD = process.env.NODE_ENV === 'production'
-const OAUTH_STATE_TTL_MS = 10 * 60 * 1000
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000
 const REWARD_TICKET_TTL_MS = 5 * 60 * 1000
 const REWARD_AMOUNT = 10
@@ -29,7 +28,6 @@ export {
 	GAME_ALLOWED_ORIGINS,
 	HCAUTH_URL,
 	IS_PROD,
-	OAUTH_STATE_TTL_MS,
 	PORT,
 	REDIRECT_URI,
 	REWARD_AMOUNT,

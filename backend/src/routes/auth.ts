@@ -1,11 +1,8 @@
-import crypto from 'node:crypto'
 import type express from 'express'
 import {
 	CLIENT_ID,
 	CLIENT_SECRET,
 	FRONTEND_URL,
-	IS_PROD,
-	OAUTH_STATE_TTL_MS,
 } from '../config.js'
 import {
 	createAuthorizationUrl,
@@ -14,8 +11,6 @@ import {
 	refreshAccessToken,
 } from '../auth/hackclub-oauth.js'
 import {
-	OAUTH_RETURN_COOKIE,
-	OAUTH_STATE_COOKIE,
 	SESSION_COOKIE,
 	buildSessionCookieOptions,
 	createSession,
@@ -25,7 +20,6 @@ import {
 } from '../auth/session.js'
 import { signSessionValue } from '../auth/session.js'
 import { getUserPieceBalance } from '../piece-store.js'
-import { getRequestOrigin } from '../http/request-origin.js'
 import type { RouteContext } from './context.js'
 
 export function registerAuthRoutes(app: express.Express, context: RouteContext): void {
@@ -35,49 +29,13 @@ export function registerAuthRoutes(app: express.Express, context: RouteContext):
 			return
 		}
 
-		const state = crypto.randomUUID()
-		const returnTo = String(req.query.returnTo || '').trim()
-		let safeReturnTo = ''
-		if (returnTo) {
-			try {
-				const parsed = new URL(returnTo)
-				if (parsed.origin === FRONTEND_URL || parsed.origin === getRequestOrigin(req)) {
-					safeReturnTo = returnTo
-				}
-			} catch {
-				safeReturnTo = ''
-			}
-		}
-
-		res.cookie(OAUTH_STATE_COOKIE, state, {
-			httpOnly: true,
-			sameSite: 'lax',
-			secure: IS_PROD,
-			path: '/',
-			maxAge: OAUTH_STATE_TTL_MS,
-		})
-		if (safeReturnTo) {
-			res.cookie(OAUTH_RETURN_COOKIE, safeReturnTo, {
-				httpOnly: true,
-				sameSite: 'lax',
-				secure: IS_PROD,
-				path: '/',
-				maxAge: OAUTH_STATE_TTL_MS,
-			})
-		} else {
-			res.clearCookie(OAUTH_RETURN_COOKIE, { path: '/' })
-		}
-
-		res.redirect(createAuthorizationUrl(state))
+		res.redirect(createAuthorizationUrl())
 	})
 
 	app.get('/auth/callback', async (req, res) => {
 		const code = req.query.code as string | undefined
-		const state = req.query.state as string | undefined
-		const storedState = req.cookies?.[OAUTH_STATE_COOKIE] as string | undefined
-		const returnTo = (req.cookies?.[OAUTH_RETURN_COOKIE] as string | undefined) || ''
 
-		if (!code || !state || !storedState || state !== storedState) {
+		if (!code) {
 			res.redirect(`${FRONTEND_URL}/?auth=error`)
 			return
 		}
@@ -102,14 +60,7 @@ export function registerAuthRoutes(app: express.Express, context: RouteContext):
 				user,
 			})
 
-			res.clearCookie(OAUTH_STATE_COOKIE, { path: '/' })
-			res.clearCookie(OAUTH_RETURN_COOKIE, { path: '/' })
 			res.cookie(SESSION_COOKIE, signSessionValue(sessionId), buildSessionCookieOptions())
-
-			if (returnTo) {
-				res.redirect(returnTo)
-				return
-			}
 			res.redirect(`${FRONTEND_URL}/?auth=success`)
 		} catch (error) {
 			console.error('[oauth] callback error', error)

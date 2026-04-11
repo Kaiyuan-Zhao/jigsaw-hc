@@ -4,8 +4,6 @@ import { IS_PROD, SESSION_SECRET, SESSION_TTL_MS } from '../config.js'
 import type { SessionRecord, SessionUser } from './types.js'
 
 export const SESSION_COOKIE = 'jigsaw_session'
-export const OAUTH_STATE_COOKIE = 'jigsaw_oauth_state'
-export const OAUTH_RETURN_COOKIE = 'jigsaw_oauth_return'
 
 const sessions = new Map<string, SessionRecord>()
 
