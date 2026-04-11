@@ -69,14 +69,32 @@ export function deleteSession(id: string): void {
 	sessions.delete(id)
 }
 
-export function buildSessionCookieOptions() {
+function sessionCookieBaseOptions() {
+	if (IS_PROD) {
+		return {
+			httpOnly: true as const,
+			sameSite: 'none' as const,
+			secure: true as const,
+			path: '/' as const,
+		}
+	}
 	return {
 		httpOnly: true as const,
 		sameSite: 'lax' as const,
-		secure: IS_PROD,
-		path: '/',
+		secure: false as const,
+		path: '/' as const,
+	}
+}
+
+export function buildSessionCookieOptions() {
+	return {
+		...sessionCookieBaseOptions(),
 		maxAge: SESSION_TTL_MS,
 	}
+}
+
+export function clearSessionCookieOptions() {
+	return sessionCookieBaseOptions()
 }
 
 export function cleanupExpiredSessions(): void {

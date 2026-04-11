@@ -13,6 +13,7 @@ import {
 import {
 	SESSION_COOKIE,
 	buildSessionCookieOptions,
+	clearSessionCookieOptions,
 	createSession,
 	deleteSession,
 	getSession,
@@ -88,7 +89,7 @@ export function registerAuthRoutes(app: express.Express, context: RouteContext):
 			} catch (error) {
 				console.error('[oauth] refresh failed', error)
 				deleteSession(id)
-				res.clearCookie(SESSION_COOKIE, { path: '/' })
+				res.clearCookie(SESSION_COOKIE, clearSessionCookieOptions())
 				res.json({ authenticated: false })
 				return
 			}
@@ -109,7 +110,7 @@ export function registerAuthRoutes(app: express.Express, context: RouteContext):
 		if (sessionData) {
 			deleteSession(sessionData.id)
 		}
-		res.clearCookie(SESSION_COOKIE, { path: '/' })
+		res.clearCookie(SESSION_COOKIE, clearSessionCookieOptions())
 		res.json({ success: true })
 	})
 }
