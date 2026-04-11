@@ -15,11 +15,11 @@ import {
 	buildSessionCookieOptions,
 	clearSessionCookieOptions,
 	createSignedSessionCookieValue,
+	getSessionFromRequest,
 } from '../auth/session.js'
 import { getUserPieceBalance } from '../piece-store.js'
-import type { RouteContext } from './context.js'
 
-export function registerAuthRoutes(app: express.Express, context: RouteContext): void {
+export function registerAuthRoutes(app: express.Express): void {
 	app.get('/auth/login', (req, res) => {
 		if (!CLIENT_ID || !CLIENT_SECRET) {
 			res.status(500).json({ error: 'OAuth is not configured on the backend' })
@@ -67,7 +67,7 @@ export function registerAuthRoutes(app: express.Express, context: RouteContext):
 
 	app.get('/auth/me', async (req, res) => {
 		try {
-			const sessionData = context.getSessionFromRequest(req)
+			const sessionData = getSessionFromRequest(req)
 			if (!sessionData) {
 				res.json({ authenticated: false })
 				return

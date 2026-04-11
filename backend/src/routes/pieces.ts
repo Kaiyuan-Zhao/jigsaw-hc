@@ -1,12 +1,12 @@
 import type express from 'express'
+import { getSessionFromRequest } from '../auth/session.js'
 import { IS_PROD } from '../config.js'
 import { adjustUserPieces, getUserPieceBalance } from '../piece-store.js'
-import type { RouteContext } from './context.js'
 
-export function registerPieceRoutes(app: express.Express, context: RouteContext): void {
+export function registerPieceRoutes(app: express.Express): void {
 	app.get('/pieces/me', async (req, res) => {
 		try {
-			const sessionData = context.getSessionFromRequest(req)
+			const sessionData = getSessionFromRequest(req)
 			if (!sessionData) {
 				res.status(401).json({ error: 'Unauthorized' })
 				return
@@ -27,7 +27,7 @@ export function registerPieceRoutes(app: express.Express, context: RouteContext)
 				return
 			}
 
-			const sessionData = context.getSessionFromRequest(req)
+			const sessionData = getSessionFromRequest(req)
 			if (!sessionData) {
 				res.status(401).json({ error: 'Unauthorized' })
 				return

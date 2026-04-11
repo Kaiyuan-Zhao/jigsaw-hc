@@ -1,4 +1,5 @@
 import { API_BASE_URL } from './config'
+import { fetchJson } from './lib/api'
 import { htmlToElement } from './lib/dom'
 import type { AuthMeResponse } from './types/auth'
 
@@ -23,13 +24,6 @@ export function buildSiteHeader(): HTMLElement {
 
 	const setSignedOut = (): void => {
 		authSlot.innerHTML = `<a class="j-site-signup" href="${API_BASE_URL}/auth/login">Sign up</a>`
-		const signup = authSlot.querySelector<HTMLAnchorElement>('.j-site-signup')
-		if (signup) {
-			signup.addEventListener('click', (event) => {
-				event.preventDefault()
-				window.location.href = `${API_BASE_URL}/auth/login`
-			})
-		}
 	}
 
 	const setSignedIn = (name: string, pieces = 0): void => {
@@ -47,7 +41,7 @@ export function buildSiteHeader(): HTMLElement {
 		logoutButton.addEventListener('click', async () => {
 			logoutButton.disabled = true
 			try {
-				await fetch(`${API_BASE_URL}/auth/logout`, {
+				await fetchJson<{ success: boolean }>('/auth/logout', {
 					method: 'POST',
 					credentials: 'include',
 				})
@@ -60,15 +54,9 @@ export function buildSiteHeader(): HTMLElement {
 
 	const syncAuthState = async (): Promise<void> => {
 		try {
-			const response = await fetch(`${API_BASE_URL}/auth/me`, {
+			const payload = await fetchJson<AuthMeResponse>('/auth/me', {
 				credentials: 'include',
 			})
-			if (!response.ok) {
-				setSignedOut()
-				return
-			}
-
-			const payload = (await response.json()) as AuthMeResponse
 			if (!payload.authenticated) {
 				setSignedOut()
 				return

@@ -1,11 +1,11 @@
 import type express from 'express'
+import { getSessionFromRequest } from '../auth/session.js'
 import { applyArcadeUpvote, listArcadePuzzles, registerOrUpdateArcadePuzzle } from '../piece-store.js'
-import type { RouteContext } from './context.js'
 
-export function registerArcadeRoutes(app: express.Express, context: RouteContext): void {
+export function registerArcadeRoutes(app: express.Express): void {
 	app.get('/arcade/puzzles', async (req, res) => {
 		try {
-			const sessionData = context.getSessionFromRequest(req)
+			const sessionData = getSessionFromRequest(req)
 			const voterId = sessionData?.session.user.id
 			res.json({ puzzles: await listArcadePuzzles(voterId) })
 		} catch (error) {
@@ -16,7 +16,7 @@ export function registerArcadeRoutes(app: express.Express, context: RouteContext
 
 	app.post('/arcade/puzzles', async (req, res) => {
 		try {
-			const sessionData = context.getSessionFromRequest(req)
+			const sessionData = getSessionFromRequest(req)
 			if (!sessionData) {
 				res.status(401).json({ error: 'Unauthorized' })
 				return
@@ -67,7 +67,7 @@ export function registerArcadeRoutes(app: express.Express, context: RouteContext
 
 	app.post('/arcade/upvote', async (req, res) => {
 		try {
-			const sessionData = context.getSessionFromRequest(req)
+			const sessionData = getSessionFromRequest(req)
 			if (!sessionData) {
 				res.status(401).json({ error: 'Sign in with Hack Club to upvote' })
 				return

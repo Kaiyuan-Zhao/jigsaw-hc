@@ -1,1 +1,0 @@
-export { initShop } from '../shop'

@@ -8,7 +8,6 @@ const SCOPES = process.env.HCAUTH_SCOPES || 'openid profile email name slack_id 
 const SESSION_SECRET = process.env.SESSION_SECRET || 'dev-secret-change-me'
 const IS_PROD = process.env.NODE_ENV === 'production'
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000
-const REWARD_TICKET_TTL_MS = 5 * 60 * 1000
 const REWARD_AMOUNT = 10
 const GAME_ALLOWED_ORIGINS = (process.env.GAME_ALLOWED_ORIGINS || 'http://localhost:3000')
 	.split(',')
@@ -31,7 +30,6 @@ export {
 	PORT,
 	REDIRECT_URI,
 	REWARD_AMOUNT,
-	REWARD_TICKET_TTL_MS,
 	SCOPES,
 	SESSION_SECRET,
 	SESSION_TTL_MS,

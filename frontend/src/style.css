@@ -55,7 +55,6 @@ body {
   border-radius: 999px;
   padding: 8px 12px;
   font-weight: 800;
-  transition: all 0.2s ease;
 }
 
 .j-site-nav-link:hover {
@@ -71,7 +70,6 @@ body {
   border-radius: 999px;
   padding: 10px 16px;
   font-weight: 800;
-  transition: all 0.2s ease;
 }
 
 .j-site-signup:hover {
@@ -82,6 +80,18 @@ body {
 .j-site-auth {
   display: flex;
   align-items: center;
+}
+
+:is(
+  .j-site-nav-link,
+  .j-site-signup,
+  .j-site-logout,
+  .j-docs-nav-link,
+  .j-docs-page-link,
+  .j-piece-test-btn,
+  .j-arcade-form-submit
+) {
+  transition: all 0.2s ease;
 }
 
 .j-site-user-wrap {
@@ -111,16 +121,10 @@ body {
   padding: 8px 12px;
   font-weight: 800;
   cursor: pointer;
-  transition: all 0.2s ease;
 }
 
 .j-site-logout:hover {
   border-style: dashed;
-}
-
-.j-site-logout:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
 }
 
 .j-site-piece-pill {
@@ -200,7 +204,6 @@ body {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  transition: all 0.2s ease;
 }
 
 .j-docs-nav-link:hover {
@@ -318,7 +321,6 @@ body {
   color: #111827;
   font-weight: 700;
   background: #fff;
-  transition: all 0.2s ease;
 }
 
 .j-docs-page-link:hover {
@@ -707,14 +709,6 @@ h1, h2, h3, h4 {
   font-weight: 700;
 }
 
-.j-creator-arcade-status.is-error {
-  color: #b91c1c;
-}
-
-.j-creator-arcade-status.is-success {
-  color: #166534;
-}
-
 .j-arcade-pieces-user {
   margin: 0;
   font-weight: 700;
@@ -741,30 +735,16 @@ h1, h2, h3, h4 {
   padding: 8px 14px;
   font-weight: 800;
   cursor: pointer;
-  transition: all 0.2s ease;
 }
 
 .j-piece-test-btn:hover {
   border-style: dashed;
 }
 
-.j-piece-test-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
 .j-arcade-piece-test-status {
   margin: 8px 0 0;
   min-height: 20px;
   font-weight: 700;
-}
-
-.j-arcade-piece-test-status.is-error {
-  color: #b91c1c;
-}
-
-.j-arcade-piece-test-status.is-success {
-  color: #166534;
 }
 
 .j-creator-arcade-form {
@@ -801,16 +781,10 @@ h1, h2, h3, h4 {
   padding: 10px 14px;
   font-weight: 800;
   cursor: pointer;
-  transition: all 0.2s ease;
 }
 
 .j-arcade-form-submit:hover {
   border-style: dashed;
-}
-
-.j-arcade-form-submit:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
 }
 
 .j-icon-wrap {
@@ -1223,14 +1197,6 @@ h1, h2, h3, h4 {
   text-align: center;
 }
 
-.j-arcade-upvote-status.is-error {
-  color: #b91c1c;
-}
-
-.j-arcade-upvote-status.is-success {
-  color: #166534;
-}
-
 .j-arcade-back-link {
   display: inline-block;
   text-decoration: none;
@@ -1444,17 +1410,12 @@ h1, h2, h3, h4 {
     width: min(320px, 98%);
   }
 
-  .j-arcade-piece-top {
-    margin-bottom: -12%;
-  }
-
   .j-arcade-piece-inner-top {
     padding: 30% 30% 38%;
   }
 
   .j-arcade-piece-inner-bottom {
     padding: 35% 14% 16%;
-    z-index: 10;
   }
 
   .j-arcade-card-desc {
@@ -1640,16 +1601,34 @@ h1, h2, h3, h4 {
   color: #4b5563;
 }
 
-.j-shop-card-status.is-error {
+.j-shop-card-status.is-pending {
+  color: #4b5563;
+}
+
+:is(
+  .j-creator-arcade-status,
+  .j-arcade-piece-test-status,
+  .j-arcade-upvote-status,
+  .j-shop-card-status
+).is-error {
   color: #b91c1c;
+}
+
+.j-creator-arcade-status.is-success,
+.j-arcade-piece-test-status.is-success,
+.j-arcade-upvote-status.is-success {
+  color: #166534;
 }
 
 .j-shop-card-status.is-success {
   color: #15803d;
 }
 
-.j-shop-card-status.is-pending {
-  color: #4b5563;
+.j-site-logout:disabled,
+.j-piece-test-btn:disabled,
+.j-arcade-form-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .j-shop-card-footer {

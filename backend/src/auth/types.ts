@@ -37,16 +37,6 @@ export type SessionRecord = {
 	user: SessionUser
 }
 
-export type RewardTicketRecord = {
-	ticket: string
-	userId: string
-	puzzleId: string
-	amount: number
-	createdAt: number
-	expiresAt: number
-	usedAt?: number
-}
-
 export type ClaimTokenPayload = {
 	sub: string
 	aud: string

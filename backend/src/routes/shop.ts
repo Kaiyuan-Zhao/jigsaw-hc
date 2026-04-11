@@ -1,11 +1,15 @@
 import type express from 'express'
-import { purchaseShopItem } from '../piece-store.js'
-import type { RouteContext } from './context.js'
+import { getSessionFromRequest } from '../auth/session.js'
+import { getShopCatalog, purchaseShopItem } from '../piece-store.js'
 
-export function registerShopRoutes(app: express.Express, context: RouteContext): void {
+export function registerShopRoutes(app: express.Express): void {
+	app.get('/shop/catalog', (_req, res) => {
+		res.json({ items: getShopCatalog() })
+	})
+
 	app.post('/shop/purchase', async (req, res) => {
 		try {
-			const sessionData = context.getSessionFromRequest(req)
+			const sessionData = getSessionFromRequest(req)
 			if (!sessionData) {
 				res.status(401).json({ error: 'Unauthorized' })
 				return

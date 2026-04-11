@@ -3,13 +3,27 @@ import type express from 'express'
 import { CLAIM_TOKEN_TTL_SECONDS, FRONTEND_URL, GAME_ALLOWED_ORIGINS, REWARD_AMOUNT } from '../config.js'
 import { signClaimToken, verifyClaimToken, hasUsedClaimToken, markClaimTokenUsed } from '../auth/claim-token.js'
 import type { ClaimTokenPayload } from '../auth/types.js'
+import { getSessionFromRequest } from '../auth/session.js'
 import { getRequestOrigin } from '../http/request-origin.js'
 import { buildGamesSdk } from '../games/sdk-script.js'
 import { claimPuzzleReward, hasPuzzleClaim } from '../piece-store.js'
-import { createRewardTicket, deleteRewardTicket, getRewardTicket, markRewardTicketUsed } from '../games/reward-tickets.js'
-import type { RouteContext } from './context.js'
 
-export function registerGameRoutes(app: express.Express, context: RouteContext): void {
+function createClaimToken(userId: string, origin: string): { token: string; expiresAt: number } {
+	const nowSeconds = Math.floor(Date.now() / 1000)
+	const payload: ClaimTokenPayload = {
+		sub: userId,
+		aud: origin,
+		jti: crypto.randomUUID(),
+		iat: nowSeconds,
+		exp: nowSeconds + CLAIM_TOKEN_TTL_SECONDS,
+	}
+	return {
+		token: signClaimToken(payload),
+		expiresAt: payload.exp,
+	}
+}
+
+export function registerGameRoutes(app: express.Express): void {
 	app.get('/games/sdk.js', (_req, res) => {
 		res.setHeader('content-type', 'application/javascript; charset=utf-8')
 		res.send(buildGamesSdk(FRONTEND_URL))
@@ -22,28 +36,20 @@ export function registerGameRoutes(app: express.Express, context: RouteContext):
 			return
 		}
 
-		const sessionData = context.getSessionFromRequest(req)
+		const sessionData = getSessionFromRequest(req)
 		if (!sessionData) {
 			const returnTo = `${getRequestOrigin(req)}/games/claim-popup?origin=${encodeURIComponent(origin)}`
 			res.redirect(`/auth/login?returnTo=${encodeURIComponent(returnTo)}`)
 			return
 		}
 
-		const nowSeconds = Math.floor(Date.now() / 1000)
-		const payload: ClaimTokenPayload = {
-			sub: sessionData.session.user.id,
-			aud: origin,
-			jti: crypto.randomUUID(),
-			iat: nowSeconds,
-			exp: nowSeconds + CLAIM_TOKEN_TTL_SECONDS,
-		}
-		const token = signClaimToken(payload)
+		const tokenResult = createClaimToken(sessionData.session.user.id, origin)
 		res.setHeader('content-type', 'text/html; charset=utf-8')
 		res.send(`<!doctype html><html><body><script>
 	(function(){
 		try {
 			if (window.opener) {
-				window.opener.postMessage({ type: 'jigsaw-claim-token', token: ${JSON.stringify(token)} }, ${JSON.stringify(origin)})
+				window.opener.postMessage({ type: 'jigsaw-claim-token', token: ${JSON.stringify(tokenResult.token)} }, ${JSON.stringify(origin)})
 			}
 		} catch (_e) {}
 		window.close()
@@ -51,99 +57,8 @@ export function registerGameRoutes(app: express.Express, context: RouteContext):
 	</script></body></html>`)
 	})
 
-	app.post('/games/reward-ticket', async (req, res) => {
-		try {
-			const sessionData = context.getSessionFromRequest(req)
-			if (!sessionData) {
-				res.status(401).json({ error: 'Unauthorized' })
-				return
-			}
-
-			const { puzzleId } = (req.body || {}) as { puzzleId?: string }
-			const normalizedPuzzleId = String(puzzleId || '').trim()
-			if (!normalizedPuzzleId) {
-				res.status(400).json({ error: 'puzzleId is required' })
-				return
-			}
-
-			const userId = sessionData.session.user.id
-			if (await hasPuzzleClaim(userId, normalizedPuzzleId)) {
-				res.status(409).json({ error: 'Puzzle reward already claimed' })
-				return
-			}
-
-			const record = createRewardTicket(userId, normalizedPuzzleId)
-			res.json({
-				ticket: record.ticket,
-				puzzleId: record.puzzleId,
-				amount: record.amount,
-				expiresAt: record.expiresAt,
-			})
-		} catch (error) {
-			console.error('[games] failed to create reward ticket', error)
-			res.status(500).json({ error: 'Failed to create reward ticket' })
-		}
-	})
-
-	app.post('/games/redeem-ticket', async (req, res) => {
-		try {
-			const { ticket } = (req.body || {}) as { ticket?: string }
-			const normalizedTicket = String(ticket || '').trim()
-			if (!normalizedTicket) {
-				res.status(400).json({ error: 'ticket is required' })
-				return
-			}
-
-			const record = getRewardTicket(normalizedTicket)
-			if (!record) {
-				res.status(404).json({ error: 'Invalid ticket' })
-				return
-			}
-
-			if (record.usedAt) {
-				res.status(409).json({ error: 'Ticket already used' })
-				return
-			}
-
-			if (record.expiresAt < Date.now()) {
-				deleteRewardTicket(normalizedTicket)
-				res.status(410).json({ error: 'Ticket expired' })
-				return
-			}
-
-			if (await hasPuzzleClaim(record.userId, record.puzzleId)) {
-				markRewardTicketUsed(normalizedTicket)
-				res.status(409).json({ error: 'Puzzle reward already claimed' })
-				return
-			}
-
-			const nextBalance = await claimPuzzleReward({
-				targetUserId: record.userId,
-				puzzleId: record.puzzleId,
-				amount: record.amount,
-				reason: `Puzzle reward:${record.puzzleId}`,
-			})
-			markRewardTicketUsed(normalizedTicket)
-			if (nextBalance === null) {
-				res.status(409).json({ error: 'Puzzle reward already claimed' })
-				return
-			}
-
-			res.json({
-				success: true,
-				userId: record.userId,
-				puzzleId: record.puzzleId,
-				amount: record.amount,
-				pieces: nextBalance,
-			})
-		} catch (error) {
-			console.error('[games] failed to redeem reward ticket', error)
-			res.status(500).json({ error: 'Failed to redeem ticket' })
-		}
-	})
-
 	app.post('/games/claim-token', (req, res) => {
-		const sessionData = context.getSessionFromRequest(req)
+		const sessionData = getSessionFromRequest(req)
 		if (!sessionData) {
 			res.status(401).json({ error: 'Unauthorized' })
 			return
@@ -160,17 +75,10 @@ export function registerGameRoutes(app: express.Express, context: RouteContext):
 			return
 		}
 
-		const nowSeconds = Math.floor(Date.now() / 1000)
-		const payload: ClaimTokenPayload = {
-			sub: sessionData.session.user.id,
-			aud: normalizedOrigin,
-			jti: crypto.randomUUID(),
-			iat: nowSeconds,
-			exp: nowSeconds + CLAIM_TOKEN_TTL_SECONDS,
-		}
+		const tokenResult = createClaimToken(sessionData.session.user.id, normalizedOrigin)
 		res.json({
-			token: signClaimToken(payload),
-			expiresAt: payload.exp,
+			token: tokenResult.token,
+			expiresAt: tokenResult.expiresAt,
 		})
 	})
 
@@ -197,10 +105,6 @@ export function registerGameRoutes(app: express.Express, context: RouteContext):
 			const requestOrigin = String(req.get('origin') || '').trim()
 			if (!requestOrigin || requestOrigin !== payload.aud) {
 				res.status(403).json({ error: 'Origin mismatch' })
-				return
-			}
-			if (!GAME_ALLOWED_ORIGINS.includes(requestOrigin)) {
-				res.status(403).json({ error: 'Origin not allowed' })
 				return
 			}
 			if (hasUsedClaimToken(payload.jti)) {

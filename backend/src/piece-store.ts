@@ -8,12 +8,6 @@ function requireSupabase() {
 	return db
 }
 
-type PieceGrantInput = {
-	targetUserId: string
-	amount: number
-	reason?: string
-}
-
 type PuzzleRewardInput = {
 	targetUserId: string
 	puzzleId: string
@@ -49,19 +43,28 @@ export type ArcadeUpvoteResult =
 	| { ok: true; newUpvote: boolean; likeCount: number }
 	| { ok: false; error: 'unknown_puzzle' | 'self_upvote' }
 
-/** Server-side prices; must stay in sync with frontend shop catalog. */
-const SHOP_CATALOG: Record<string, { pricePieces: number; title: string }> = {
-	'puzzlewarehouse-giftcard-10': { pricePieces: 360, title: 'PuzzleWarehouse $10 Gift Card' },
-	'puzzlewarehouse-giftcard-15': { pricePieces: 450, title: 'PuzzleWarehouse $15 Gift Card' },
-	'puzzlewarehouse-giftcard-25': { pricePieces: 720, title: 'PuzzleWarehouse $25 Gift Card' },
-	storyteller: { pricePieces: 540, title: 'Storyteller (Steam)' },
-	'bento-blocks': { pricePieces: 450, title: 'Bento Blocks (Steam)' },
-	superliminal: { pricePieces: 640, title: 'Superliminal (Steam)' },
-	bloxpath: { pricePieces: 180, title: 'Bloxpath (Steam)' },
-	portal: { pricePieces: 400, title: 'Portal (Steam)' },
-	'baba-is-you': { pricePieces: 480, title: 'Baba Is You (Steam)' },
-	'level-devil': { pricePieces: 230, title: 'Level Devil (Steam)' },
-	'bga-premium-1-month': { pricePieces: 180, title: 'Board Game Arena Premium (1 Month)' },
+const SHOP_CATALOG = [
+	{ id: 'puzzlewarehouse-giftcard-10', pricePieces: 360, title: 'PuzzleWarehouse $10 Gift Card' },
+	{ id: 'puzzlewarehouse-giftcard-15', pricePieces: 450, title: 'PuzzleWarehouse $15 Gift Card' },
+	{ id: 'puzzlewarehouse-giftcard-25', pricePieces: 720, title: 'PuzzleWarehouse $25 Gift Card' },
+	{ id: 'storyteller', pricePieces: 540, title: 'Storyteller (Steam)' },
+	{ id: 'bento-blocks', pricePieces: 450, title: 'Bento Blocks (Steam)' },
+	{ id: 'superliminal', pricePieces: 640, title: 'Superliminal (Steam)' },
+	{ id: 'bloxpath', pricePieces: 180, title: 'Bloxpath (Steam)' },
+	{ id: 'portal', pricePieces: 400, title: 'Portal (Steam)' },
+	{ id: 'baba-is-you', pricePieces: 480, title: 'Baba Is You (Steam)' },
+	{ id: 'level-devil', pricePieces: 230, title: 'Level Devil (Steam)' },
+	{ id: 'bga-premium-1-month', pricePieces: 180, title: 'Board Game Arena Premium (1 Month)' },
+] as const
+const SHOP_CATALOG_BY_ID = Object.fromEntries(SHOP_CATALOG.map((item) => [item.id, item])) as Record<
+	string,
+	{ id: string; pricePieces: number; title: string }
+>
+
+export type ShopCatalogItem = {
+	id: string
+	pricePieces: number
+	title: string
 }
 
 export type ShopPurchaseResult =
@@ -69,8 +72,12 @@ export type ShopPurchaseResult =
 	| { success: false; error: 'unknown_item' }
 	| { success: false; error: 'insufficient_pieces'; pieces: number }
 
-export function getPieceDbPath(): string {
+export function getPieceStorageBackend(): string {
 	return 'supabase'
+}
+
+export function getShopCatalog(): ShopCatalogItem[] {
+	return SHOP_CATALOG.map((item) => ({ ...item }))
 }
 
 export async function getUserPieceBalance(userId: string): Promise<number> {
@@ -133,19 +140,6 @@ export async function hasPuzzleClaim(userId: string, puzzleId: string): Promise<
 		.maybeSingle()
 	if (error) throw error
 	return Boolean(data)
-}
-
-export async function markPuzzleClaimed(userId: string, puzzleId: string): Promise<void> {
-	const supabase = requireSupabase()
-	const { error } = await supabase.from('puzzle_claims').upsert(
-		{
-			user_id: userId,
-			puzzle_id: puzzleId,
-			created_at: Date.now(),
-		},
-		{ onConflict: 'user_id,puzzle_id' }
-	)
-	if (error) throw error
 }
 
 export async function claimPuzzleReward(input: PuzzleRewardInput): Promise<number | null> {
@@ -297,7 +291,7 @@ export async function applyArcadeUpvote(voterUserId: string, puzzleId: string): 
 
 export async function purchaseShopItem(userId: string, rawItemId: string): Promise<ShopPurchaseResult> {
 	const itemId = rawItemId.trim()
-	const catalog = SHOP_CATALOG[itemId]
+	const catalog = SHOP_CATALOG_BY_ID[itemId]
 	if (!catalog) {
 		return { success: false, error: 'unknown_item' }
 	}

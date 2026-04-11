@@ -1,1 +1,0 @@
-export { initArcade } from '../arcade'

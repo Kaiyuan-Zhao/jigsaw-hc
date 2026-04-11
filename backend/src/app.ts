@@ -1,7 +1,5 @@
 import express from 'express'
 import cookieParser from 'cookie-parser'
-import { getSessionFromRequest } from './auth/session.js'
-import { cleanupRewardTickets } from './games/reward-tickets.js'
 import { registerHealthRoutes } from './routes/health.js'
 import { registerGameRoutes } from './routes/games.js'
 import { registerAuthRoutes } from './routes/auth.js'
@@ -14,20 +12,12 @@ export function createApp(): express.Express {
 	app.use(express.json())
 	app.use(cookieParser())
 
-	const routeContext = { getSessionFromRequest }
-
 	registerHealthRoutes(app)
-	registerGameRoutes(app, routeContext)
-	registerAuthRoutes(app, routeContext)
-	registerPieceRoutes(app, routeContext)
-	registerArcadeRoutes(app, routeContext)
-	registerShopRoutes(app, routeContext)
+	registerGameRoutes(app)
+	registerAuthRoutes(app)
+	registerPieceRoutes(app)
+	registerArcadeRoutes(app)
+	registerShopRoutes(app)
 
 	return app
-}
-
-export function startBackgroundCleanup(): void {
-	setInterval(() => {
-		cleanupRewardTickets()
-	}, 60_000)
 }

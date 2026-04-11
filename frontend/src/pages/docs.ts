@@ -1,1 +1,0 @@
-export { initDocs } from '../docs'

@@ -33,12 +33,12 @@ function parseSessionValue(raw: string): SessionRecord | null {
 	}
 }
 
-export function getSessionFromRequest(req: express.Request): { id: string; session: SessionRecord } | null {
+export function getSessionFromRequest(req: express.Request): { session: SessionRecord } | null {
 	const signedSession = req.cookies?.[SESSION_COOKIE] as string | undefined
 	if (!signedSession) return null
 	const session = parseSessionValue(signedSession)
 	if (!session) return null
-	return { id: 'cookie', session }
+	return { session }
 }
 
 export function createSignedSessionCookieValue(input: {

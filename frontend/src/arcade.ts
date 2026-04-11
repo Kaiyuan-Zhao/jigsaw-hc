@@ -1,14 +1,13 @@
-import { API_BASE_URL } from './config'
+import { fetchJson } from './lib/api'
 import type { EdgeType } from './puzzle-path'
 import { htmlToElement } from './lib/dom'
 import { puzzleSVG } from './ui/puzzle-svg'
 import type { ApiErrorResponse, AuthMeResponse, AuthUser } from './types/auth'
 import type { ArcadeApiPuzzle, ExampleCard } from './types/arcade'
-type IconName = 'heart'
 type Notch = { top: EdgeType; right: EdgeType; bottom: EdgeType; left: EdgeType }
 
-const HERO_THUMB = new URL('./assets/vite.svg', import.meta.url).href
 const ARCADE_PASTEL_COLORS = ['#bae1ff', '#ffb3ba', '#baffc9', '#ffffba'] as const
+const HERO_THUMB = new URL('./assets/vite.svg', import.meta.url).href
 
 const EXAMPLES: ExampleCard[] = [
   { title: 'Color Cipher', author: 'by @maya_codes', genre: 'Browser puzzle game', thumbnail: HERO_THUMB, likes: 24, gameUrl: 'http://localhost:3000/' },
@@ -21,12 +20,11 @@ const EXAMPLES: ExampleCard[] = [
   { title: 'Phantom Signal', author: 'by @spooky_dev', genre: 'Audio ARG', thumbnail: HERO_THUMB, likes: 54 },
 ]
 
-const ICON_PATHS: Record<IconName, string> = {
-  heart: '<path d="m12 20-1.1-1C6 14.7 3 12 3 8.5 3 5.4 5.4 3 8.5 3c1.7 0 3.4.8 4.5 2.1C14.1 3.8 15.8 3 17.5 3 20.6 3 23 5.4 23 8.5c0 3.5-3 6.2-7.9 10.5z"/>',
-}
+const HEART_ICON_PATH =
+	'<path d="m12 20-1.1-1C6 14.7 3 12 3 8.5 3 5.4 5.4 3 8.5 3c1.7 0 3.4.8 4.5 2.1C14.1 3.8 15.8 3 17.5 3 20.6 3 23 5.4 23 8.5c0 3.5-3 6.2-7.9 10.5z"/>'
 
-function icon(name: IconName, size = 20, filled = false): string {
-  return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="${filled ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${ICON_PATHS[name]}</svg>`
+function icon(size = 20, filled = false): string {
+  return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="${filled ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${HEART_ICON_PATH}</svg>`
 }
 
 function puzzleEl(fill: string, notch: Notch): string {
@@ -88,8 +86,8 @@ function escapeHtml(value: string): string {
 }
 
 function buildCardInner(
-  entry: { title: string; genre: string; author: string; thumbnail: string; gameUrl?: string | null },
-  index: number,
+	entry: { title: string; genre: string; author: string; thumbnail: string; gameUrl?: string | null },
+	index: number,
   likeOpts:
     | {
         mode: 'demo'
@@ -112,22 +110,22 @@ function buildCardInner(
     ? `<a class="j-arcade-thumb-link" href="${escapeAttr(safeUrl)}" target="_self" rel="noopener noreferrer"><img class="j-arcade-thumb" src="${escapeAttr(entry.thumbnail)}" alt="${escapeAttr(entry.title)} thumbnail" /></a>`
     : `<img class="j-arcade-thumb" src="${escapeAttr(entry.thumbnail)}" alt="${escapeAttr(entry.title)} thumbnail" />`
 
-  const likeBlock =
-    likeOpts.mode === 'demo'
-      ? `<span class="j-like-demo-pill" role="text" title="${escapeAttr(likeOpts.demoTitle)}">
-              <span class="j-like-icon">${icon('heart', 15, false)}</span>
+	let likeBlock: string
+	if (likeOpts.mode === 'demo') {
+		likeBlock = `<span class="j-like-demo-pill" role="text" title="${escapeAttr(likeOpts.demoTitle)}">
+              <span class="j-like-icon">${icon(15, false)}</span>
               <span class="j-like-count">${likeOpts.count}</span>
             </span>`
-      : (() => {
-          const likedClass = likeOpts.liked ? ' is-liked' : ''
-          const likedStr = likeOpts.liked ? 'true' : 'false'
-          const pressedStr = likeOpts.liked ? 'true' : 'false'
-          const disabledAttr = likeOpts.disabled ? ' disabled' : ''
-          return `<button class="j-like-btn${likedClass}" type="button" data-upvote-api="1" data-puzzle-id="${escapeAttr(likeOpts.puzzleId)}" data-liked="${likedStr}" data-base-count="${likeOpts.count}" aria-pressed="${pressedStr}" aria-label="${escapeAttr(likeOpts.titleAttr)}" title="${escapeAttr(likeOpts.titleAttr)}"${disabledAttr}>
-              <span class="j-like-icon">${icon('heart', 15, likeOpts.liked)}</span>
+	} else {
+		const likedClass = likeOpts.liked ? ' is-liked' : ''
+		const likedStr = likeOpts.liked ? 'true' : 'false'
+		const pressedStr = likeOpts.liked ? 'true' : 'false'
+		const disabledAttr = likeOpts.disabled ? ' disabled' : ''
+		likeBlock = `<button class="j-like-btn${likedClass}" type="button" data-upvote-api="1" data-puzzle-id="${escapeAttr(likeOpts.puzzleId)}" data-liked="${likedStr}" data-base-count="${likeOpts.count}" aria-pressed="${pressedStr}" aria-label="${escapeAttr(likeOpts.titleAttr)}" title="${escapeAttr(likeOpts.titleAttr)}"${disabledAttr}>
+              <span class="j-like-icon">${icon(15, likeOpts.liked)}</span>
               <span class="j-like-count">${likeOpts.count}</span>
             </button>`
-        })()
+	}
 
   return `
     <div class="j-arcade-stack" style="z-index:${50 - index}" data-card-index="${index}">
@@ -245,16 +243,12 @@ function setupLikes(root: HTMLElement): void {
       }
       button.disabled = true
       try {
-        const response = await fetch(`${API_BASE_URL}/arcade/upvote`, {
+        const payload = await fetchJson<ApiErrorResponse & UpvoteOkResponse>('/arcade/upvote', {
           method: 'POST',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ puzzleId }),
         })
-        const payload = (await response.json()) as ApiErrorResponse & UpvoteOkResponse
-        if (!response.ok) {
-          throw new Error(payload.error || 'Upvote failed')
-        }
         const likeCount = Number(payload.likeCount ?? button.dataset.baseCount ?? '0')
         const countEl = button.querySelector<HTMLElement>('.j-like-count')
         const iconWrap = button.querySelector<HTMLElement>('.j-like-icon')
@@ -263,7 +257,7 @@ function setupLikes(root: HTMLElement): void {
         button.setAttribute('aria-pressed', 'true')
         button.classList.add('is-liked')
         if (countEl) countEl.textContent = String(likeCount)
-        if (iconWrap) iconWrap.innerHTML = icon('heart', 15, true)
+        if (iconWrap) iconWrap.innerHTML = icon(15, true)
         button.setAttribute('aria-label', 'You already upvoted this puzzle')
         button.title = 'You already upvoted this puzzle'
       } catch (error) {
@@ -314,7 +308,7 @@ function setupCreatorArcadeForm(root: HTMLElement, auth: AuthMeResponse | null):
     setStatusMessage(status, 'Saving…', 'pending')
 
     try {
-      const response = await fetch(`${API_BASE_URL}/arcade/puzzles`, {
+      await fetchJson<ApiErrorResponse>('/arcade/puzzles', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -326,9 +320,6 @@ function setupCreatorArcadeForm(root: HTMLElement, auth: AuthMeResponse | null):
           gameUrl: gameUrl || undefined,
         }),
       })
-
-      const payload = (await response.json()) as ApiErrorResponse
-      if (!response.ok) throw new Error(payload.error || 'Failed to save your puzzle')
 
       setStatusMessage(status, `Your puzzle “${title}” is listed in the arcade.`, 'success')
       form.reset()
@@ -360,15 +351,12 @@ function setupPieceTestControls(root: HTMLElement, auth: AuthMeResponse | null):
       setStatusMessage(status, 'Updating pieces...', 'pending')
 
       try {
-        const response = await fetch(`${API_BASE_URL}/pieces/test-adjust`, {
+        const payload = await fetchJson<ApiErrorResponse>('/pieces/test-adjust', {
           method: 'POST',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ amount: delta }),
         })
-
-        const payload = (await response.json()) as ApiErrorResponse
-        if (!response.ok) throw new Error(payload.error || 'Failed to update pieces')
 
         const nextPieces = Number(payload.pieces || 0)
         piecesValue.textContent = `🧩 ${nextPieces}`
@@ -394,9 +382,7 @@ function mountArcade(root: HTMLElement, auth: AuthMeResponse | null, apiPuzzles:
 
 async function fetchArcadePuzzles(): Promise<ArcadeApiPuzzle[]> {
   try {
-    const response = await fetch(`${API_BASE_URL}/arcade/puzzles`, { credentials: 'include' })
-    if (!response.ok) return []
-    const data = (await response.json()) as { puzzles?: ArcadeApiPuzzle[] }
+    const data = await fetchJson<{ puzzles?: ArcadeApiPuzzle[] }>('/arcade/puzzles', { credentials: 'include' })
     return Array.isArray(data.puzzles) ? data.puzzles : []
   } catch {
     return []
@@ -405,9 +391,7 @@ async function fetchArcadePuzzles(): Promise<ArcadeApiPuzzle[]> {
 
 async function fetchAuthState(): Promise<AuthMeResponse | null> {
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/me`, { credentials: 'include' })
-    if (!response.ok) return null
-    return (await response.json()) as AuthMeResponse
+    return await fetchJson<AuthMeResponse>('/auth/me', { credentials: 'include' })
   } catch {
     return null
   }

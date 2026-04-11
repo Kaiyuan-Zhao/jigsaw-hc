@@ -1,8 +1,8 @@
 import './style.css'
-import { initJigsaw } from './pages/jigsaw'
-import { initArcade } from './pages/arcade'
-import { initDocs } from './pages/docs'
-import { initShop } from './pages/shop'
+import { initJigsaw } from './jigsaw'
+import { initArcade } from './arcade'
+import { initDocs } from './docs'
+import { initShop } from './shop'
 import { buildSiteHeader } from './header'
 
 const app = document.querySelector<HTMLDivElement>('#app')!

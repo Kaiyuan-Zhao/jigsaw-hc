@@ -7,15 +7,6 @@
 		"build": "npm run build --prefix frontend",
 		"start": "npm run start --prefix backend",
 		"dev:web": "npm run dev --prefix frontend",
-		"dev:api": "npm run dev --prefix backend",
-		"build:web": "npm run build --prefix frontend"
-	},
-	"dependencies": {
-		"@supabase/ssr": "^0.10.2",
-		"@supabase/supabase-js": "^2.103.0"
-	},
-	"devDependencies": {
-		"@types/node": "^24.6.2",
-		"typescript": "~5.9.3"
+		"dev:api": "npm run dev --prefix backend"
 	}
 }

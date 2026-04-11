@@ -115,18 +115,12 @@ function getCurrentDocId(pathname: string): string {
 	return slug || 'solve-crediting'
 }
 
-function getNeighbors(activeIndex: number): { prev: DocPage | null; next: DocPage | null } {
-	const prev = activeIndex > 0 ? DOC_PAGES[activeIndex - 1] : null
-	const next = activeIndex < DOC_PAGES.length - 1 ? DOC_PAGES[activeIndex + 1] : null
-	return { prev, next }
-}
-
 export function initDocs(root: HTMLElement): void {
 	const activeId = getCurrentDocId(window.location.pathname)
-	const activeIndex = DOC_PAGES.findIndex((page) => page.id === activeId)
-	const selectedPage = DOC_PAGES[activeIndex] || DOC_PAGES[0]
-	const selectedIndex = activeIndex === -1 ? 0 : activeIndex
-	const { prev, next } = getNeighbors(selectedIndex)
+	const index = Math.max(0, DOC_PAGES.findIndex((page) => page.id === activeId))
+	const selectedPage = DOC_PAGES[index]
+	const prev = index > 0 ? DOC_PAGES[index - 1] : null
+	const next = index < DOC_PAGES.length - 1 ? DOC_PAGES[index + 1] : null
 
 	const sidebarItems = DOC_PAGES.map((page) => {
 		const isActive = page.id === selectedPage.id

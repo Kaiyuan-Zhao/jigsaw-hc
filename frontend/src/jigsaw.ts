@@ -66,7 +66,6 @@ type Notch = { top: EdgeType; right: EdgeType; bottom: EdgeType; left: EdgeType 
 function puzzleEl(fill: string, notch: Notch, stroke = '#111827', strokeWidth?: number, mid?: number): string {
   const opts: PuzzleSvgOptions = { fill, stroke, mid, ...notch };
   if (strokeWidth !== undefined) opts.strokeWidth = strokeWidth;
-  if (mid == undefined) opts.mid = 50;
   return puzzleSVG(opts);
 }
 
