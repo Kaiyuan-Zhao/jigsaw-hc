@@ -144,15 +144,15 @@ const PRINCIPLES: Principle[] = [
   {
     icon: 'brain',
     title: 'Clever',
-    desc: 'frustratingly stumped becomes elegantly simple.',
+    desc: 'Obvious in hindsight...',
     fill: PASTELS.green,
     notch: { top: 'flat', right: 'tab', bottom: 'hole', left: 'flat' },
     startX: -420, startY: -200, startRot: -45,
   },
   {
-    icon: 'trophy',
-    title: 'Open & Solvable',
-    desc: 'Open sourced and hosted live! Credits solves (see #docs)',
+    icon: 'globe',
+    title: 'Open',
+    desc: 'Open sourced and hosted live!',
     fill: PASTELS.pink,
     notch: { top: 'flat', right: 'flat', bottom: 'tab', left: 'hole' },
     startX: 420, startY: -160, startRot: 30,
@@ -166,9 +166,9 @@ const PRINCIPLES: Principle[] = [
     startX: -360, startY: 310, startRot: 60,
   },
   {
-    icon: 'star',
-    title: 'Fun!',
-    desc: 'Most important!',
+    icon: 'trophy',
+    title: 'Solvable',
+    desc: 'Puzzle reveals a passkey',
     fill: PASTELS.yellow,
     notch: { top: 'hole', right: 'flat', bottom: 'flat', left: 'hole' },
     startX: 320, startY: 260, startRot: -20,
@@ -299,14 +299,15 @@ function buildCreatorRewards(): string {
     <div class="c-creator-rewards" aria-label="Puzzle piece rewards">
       <p class="c-creator-rewards-title">Earn 🧩 pieces for your puzzle!</p>
       <p class="c-creator-rewards-tagline">building bigger and better puzzles = earn more pieces!</p>
+      <p class="c-creator-rewards-example">e.g</p>
       <div class="c-creator-rewards-grid">
         <article
           class="c-creator-reward-card c-creator-reward-card-small"
         >
           <div class="c-creator-reward-overlay" aria-hidden="true">${smallRewardOverlay}</div>
           <div class="c-creator-reward-content">
-            <p class="c-creator-reward-pieces">120 puzzles</p>
-            <p class="c-creator-reward-time">= ~1-2h</p>
+            <p class="c-creator-reward-pieces"> 120 🧩</p>
+            <p class="c-creator-reward-time">= ~1-2h spent</p>
           </div>
         </article>
         <article
@@ -314,11 +315,12 @@ function buildCreatorRewards(): string {
         >
           <div class="c-creator-reward-overlay" aria-hidden="true">${largeRewardOverlay}</div>
           <div class="c-creator-reward-content">
-            <p class="c-creator-reward-pieces">420 puzzles</p>
-            <p class="c-creator-reward-time">= ~3-4h</p>
+            <p class="c-creator-reward-pieces"> 420 🧩</p>
+            <p class="c-creator-reward-time">= ~3-4h spent</p>
           </div>
         </article>
       </div>
+      <p class="c-creator-rewards-hackatime">track your time with <a href="https://hackatime.hackclub.com/" target="_blank" rel="noopener noreferrer">hackatime!</a></p>
     </div>
   `
 }
@@ -377,13 +379,13 @@ const FAQS: FAQItem[] = [
   },
   {
     question: 'Do I host my own puzzle?',
-    answer: 'Yes! You host your puzzle on your own domain or platform (like GitHub Pages, Vercel, etc.). The Arcade just links to your live puzzle.',
+    answer: 'Yes! You must host your web puzzle (like GitHub Pages, Vercel, Itch.io , etc.). The Arcade will link to your live puzzle.',
     fill: PASTELS.green,
     notch: { top: 'tab', right: 'tab', bottom: 'flat', left: 'flat' },
   },
   {
-    question: 'Does  ___  count as a "puzzle"?',
-    answer: 'Anything goes as long as it\'s interactive and has a clear and clever solution! On the Arcade, set a solve password on your card so players can verify completions and you get credit.',
+    question: 'Will  ___  count as a "puzzle"?',
+    answer: 'Anything goes as long as it\'s interactive and has a clear and clever solution!',
     fill: PASTELS.pink,
     notch: { top: 'flat', right: 'flat', bottom: 'tab', left: 'tab' },
   },
@@ -395,7 +397,7 @@ const FAQS: FAQItem[] = [
   },
   {
     question: 'How do I start?',
-    answer: 'Play some puzzles! Check out the <a href="#docs">documentation</a> for guides, resources, and inspiration to get you going!',
+    answer: 'Play some puzzles for some inspiration! Check out <a href="#docs">Arcade</a> to try others\' puzzles!',
     fill: '#ffdfba',
     notch: { top: 'tab', right: 'flat', bottom: 'tab', left: 'flat' },
   },
@@ -501,8 +503,8 @@ function setupArcade(): void {
   function update(): void {
     const rect    = section!.getBoundingClientRect();
     const viewH   = window.innerHeight;
-    const scrollPivot = viewH * 0.85;
-    const travelDistance = rect.height * 0.32;
+    const scrollPivot = viewH * 0.9;
+    const travelDistance = rect.height * 0.5;
     const rawProg = (scrollPivot - rect.top) / travelDistance;
     const prog    = Math.max(0, Math.min(1, rawProg));
 

@@ -15,33 +15,23 @@ type PuzzleRewardInput = {
 	reason?: string
 }
 
-const ARCADE_UPVOTE_PIECES_FOR_CREATOR = 2
-
-export type ArcadePuzzleListItem = {
-	puzzleId: string
-	creatorUserId: string
-	title: string
-	genre: string
-	thumbnail: string
-	gameUrl: string | null
-	authorLabel: string
-	createdAt: number
-	likeCount: number
-	likedByMe: boolean
-}
-
-export type RegisterArcadePuzzleInput = {
-	puzzleId: string
-	title: string
-	genre?: string
-	thumbnail?: string
-	gameUrl?: string
-	authorLabel?: string
-}
-
 export type ArcadeUpvoteResult =
 	| { ok: true; newUpvote: boolean; likeCount: number }
-	| { ok: false; error: 'unknown_puzzle' | 'self_upvote' }
+	| { ok: false; error: 'unknown_puzzle' }
+
+export type ArcadePuzzleUpvoteState = {
+	puzzleId: string
+	likeCount: number
+	likedByMe: boolean
+	ownPuzzle: boolean
+}
+
+export type ArcadeSolutionRecord = {
+	puzzleId: string
+	creatorUserId: string
+	rewardPuzzleId: string
+	password: string
+}
 
 const SHOP_CATALOG = [
 	{ id: 'puzzlewarehouse-giftcard-10', pricePieces: 360, title: 'PuzzleWarehouse $10 Gift Card' },
@@ -156,117 +146,82 @@ export async function claimPuzzleReward(input: PuzzleRewardInput): Promise<numbe
 	return grantPieces(input.targetUserId, input.amount, input.reason)
 }
 
-export async function listArcadePuzzles(voterUserId?: string): Promise<ArcadePuzzleListItem[]> {
+function normalizeArcadePuzzleIds(puzzleIds: readonly string[]): string[] {
+	return Array.from(new Set(puzzleIds.map((id) => String(id || '').trim()).filter(Boolean))).slice(0, 200)
+}
+
+export async function listArcadePuzzleUpvotes(
+	puzzleIds: readonly string[],
+	voterUserId?: string
+): Promise<ArcadePuzzleUpvoteState[]> {
+	const ids = normalizeArcadePuzzleIds(puzzleIds)
+	if (!ids.length) return []
 	const supabase = getSupabase()
-	if (!supabase) return []
+	if (!supabase) {
+		return ids.map((puzzleId) => ({ puzzleId, likeCount: 0, likedByMe: false, ownPuzzle: false }))
+	}
 	const voter = (voterUserId || '').trim()
-	const { data: puzzleRows, error: puzzleError } = await supabase
-		.from('arcade_puzzles')
-		.select('puzzle_id,creator_user_id,title,genre,thumbnail,game_url,author_label,created_at')
-		.order('created_at', { ascending: false })
-	if (puzzleError) throw puzzleError
-	const puzzleIds = (puzzleRows || []).map((row) => row.puzzle_id)
+	const { data: upvoteRows, error: upvoteError } = await supabase
+		.from('arcade_upvotes')
+		.select('puzzle_id,voter_user_id')
+		.in('puzzle_id', ids)
+	if (upvoteError) throw upvoteError
+	const { data: solutionRows, error: solutionError } = await supabase
+		.from('arcade_solutions')
+		.select('puzzle_id,creator_user_id')
+		.in('puzzle_id', ids)
+	if (solutionError) throw solutionError
+
 	const likeCountByPuzzle = new Map<string, number>()
 	const likedByMe = new Set<string>()
-	if (puzzleIds.length > 0) {
-		const { data: upvoteRows, error: upvoteError } = await supabase
-			.from('arcade_upvotes')
-			.select('puzzle_id,voter_user_id')
-			.in('puzzle_id', puzzleIds)
-		if (upvoteError) throw upvoteError
-		for (const row of upvoteRows || []) {
-			likeCountByPuzzle.set(row.puzzle_id, (likeCountByPuzzle.get(row.puzzle_id) || 0) + 1)
-			if (voter && row.voter_user_id === voter) {
-				likedByMe.add(row.puzzle_id)
-			}
+	const ownerByPuzzle = new Map<string, string>()
+	for (const row of upvoteRows || []) {
+		likeCountByPuzzle.set(row.puzzle_id, (likeCountByPuzzle.get(row.puzzle_id) || 0) + 1)
+		if (voter && row.voter_user_id === voter) {
+			likedByMe.add(row.puzzle_id)
 		}
 	}
-	return (puzzleRows || []).map((row) => ({
-		puzzleId: row.puzzle_id,
-		creatorUserId: row.creator_user_id,
-		title: row.title,
-		genre: row.genre || '',
-		thumbnail: row.thumbnail || '',
-		gameUrl: row.game_url,
-		authorLabel: row.author_label || 'Creator',
-		createdAt: Number(row.created_at) || Date.now(),
-		likeCount: likeCountByPuzzle.get(row.puzzle_id) || 0,
-		likedByMe: likedByMe.has(row.puzzle_id),
+	for (const row of solutionRows || []) {
+		ownerByPuzzle.set(row.puzzle_id, String(row.creator_user_id || '').trim())
+	}
+	return ids.map((puzzleId) => ({
+		puzzleId,
+		likeCount: likeCountByPuzzle.get(puzzleId) || 0,
+		likedByMe: likedByMe.has(puzzleId),
+		ownPuzzle: Boolean(voter && ownerByPuzzle.get(puzzleId) === voter),
 	}))
 }
 
-export async function registerOrUpdateArcadePuzzle(
-	creatorUserId: string,
-	input: RegisterArcadePuzzleInput
-): Promise<{ ok: true } | { ok: false; error: 'puzzle_id_taken' | 'invalid_input' }> {
-	const puzzleId = input.puzzleId.trim()
-	const title = input.title.trim()
-	if (!puzzleId || puzzleId.length > 200 || !title) {
-		return { ok: false, error: 'invalid_input' }
-	}
-	const genre = (input.genre || '').trim()
-	const thumbnail = (input.thumbnail || '').trim()
-	const gameUrlRaw = input.gameUrl?.trim()
-	const gameUrl = gameUrlRaw ? gameUrlRaw : null
-	const authorLabel = (input.authorLabel || '').trim() || 'Creator'
-
-	const supabase = requireSupabase()
-	const { data: existing, error: existingError } = await supabase
-		.from('arcade_puzzles')
-		.select('creator_user_id')
-		.eq('puzzle_id', puzzleId)
+export async function getArcadeSolutionRecord(puzzleId: string): Promise<ArcadeSolutionRecord | null> {
+	const id = String(puzzleId || '').trim()
+	if (!id) return null
+	const supabase = getSupabase()
+	if (!supabase) return null
+	const { data, error } = await supabase
+		.from('arcade_solutions')
+		.select('puzzle_id,creator_user_id,reward_puzzle_id,password')
+		.eq('puzzle_id', id)
 		.maybeSingle()
-	if (existingError) throw existingError
-	if (existing && existing.creator_user_id !== creatorUserId) {
-		return { ok: false, error: 'puzzle_id_taken' }
-	}
-
-	if (!existing) {
-		const { error } = await supabase.from('arcade_puzzles').insert({
-			puzzle_id: puzzleId,
-			creator_user_id: creatorUserId,
-			title,
-			genre,
-			thumbnail,
-			game_url: gameUrl,
-			author_label: authorLabel,
-			created_at: Date.now(),
-		})
-		if (error) throw error
-		return { ok: true }
-	}
-
-	const { error } = await supabase
-		.from('arcade_puzzles')
-		.update({
-			title,
-			genre,
-			thumbnail,
-			game_url: gameUrl,
-			author_label: authorLabel,
-		})
-		.eq('puzzle_id', puzzleId)
-		.eq('creator_user_id', creatorUserId)
 	if (error) throw error
-	return { ok: true }
+	if (!data) return null
+	return {
+		puzzleId: String(data.puzzle_id || '').trim(),
+		creatorUserId: String(data.creator_user_id || '').trim(),
+		rewardPuzzleId: String(data.reward_puzzle_id || '').trim(),
+		password: String(data.password || '').trim().toLowerCase(),
+	}
 }
 
-export async function applyArcadeUpvote(voterUserId: string, puzzleId: string): Promise<ArcadeUpvoteResult> {
+export async function applyArcadeUpvote(
+	voterUserId: string,
+	puzzleId: string
+): Promise<ArcadeUpvoteResult> {
 	const id = puzzleId.trim()
 	if (!id) {
 		return { ok: false, error: 'unknown_puzzle' }
 	}
 
 	const supabase = requireSupabase()
-	const { data: row, error: rowError } = await supabase
-		.from('arcade_puzzles')
-		.select('creator_user_id')
-		.eq('puzzle_id', id)
-		.maybeSingle()
-	if (rowError) throw rowError
-	if (!row) return { ok: false, error: 'unknown_puzzle' }
-	if (row.creator_user_id === voterUserId) return { ok: false, error: 'self_upvote' }
-
 	const inserted = await supabase.from('arcade_upvotes').insert({
 		puzzle_id: id,
 		voter_user_id: voterUserId,
@@ -274,13 +229,6 @@ export async function applyArcadeUpvote(voterUserId: string, puzzleId: string): 
 	})
 	const newUpvote = !inserted.error
 	if (inserted.error && inserted.error.code !== '23505') throw inserted.error
-	if (newUpvote) {
-		await grantPieces(
-			row.creator_user_id,
-			ARCADE_UPVOTE_PIECES_FOR_CREATOR,
-			`Arcade upvote:${id}:voter=${voterUserId}`
-		)
-	}
 	const { count, error: countError } = await supabase
 		.from('arcade_upvotes')
 		.select('puzzle_id', { count: 'exact', head: true })

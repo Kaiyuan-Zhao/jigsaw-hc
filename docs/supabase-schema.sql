@@ -46,3 +46,11 @@ create table if not exists arcade_upvotes (
 	created_at bigint not null,
 	primary key (puzzle_id, voter_user_id)
 );
+
+create table if not exists arcade_solutions (
+	puzzle_id text primary key,
+	creator_user_id text not null,
+	reward_puzzle_id text not null,
+	password text not null,
+	created_at bigint not null
+);

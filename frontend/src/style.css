@@ -909,7 +909,7 @@ h1, h2, h3, h4 {
 .c-creator-reward-card-large {
   --c-reward-cols: 7;
   --c-reward-rows: 6;
-  background: color-mix(in oklab, var(--c-pastel-green) 70%, white);
+  background: color-mix(in oklab, var(--c-pastel-pink) 70%, white);
   transform: rotate(1deg);
 }
 
@@ -942,6 +942,32 @@ h1, h2, h3, h4 {
   font-weight: var(--c-weight-extrabold);
   text-transform: uppercase;
   color: var(--c-ink-soft);
+}
+
+.c-creator-rewards-example {
+  margin: 0 0 14px;
+  font-size: var(--c-text-body-sm);
+  font-weight: var(--c-weight-extrabold);
+  text-transform: none;
+  letter-spacing: 0.06em;
+  color: var(--c-muted);
+}
+
+.c-creator-rewards-hackatime {
+  margin: 14px 0 0;
+  font-size: var(--c-text-body-sm);
+  font-weight: var(--c-weight-bold);
+  color: var(--c-ink-soft);
+  text-transform: uppercase;
+}
+
+.c-creator-rewards-hackatime a {
+  color: #2563eb;
+  font-weight: var(--c-weight-extrabold);
+}
+
+.c-creator-rewards-hackatime a:hover {
+  text-decoration-style: dashed;
 }
 
 .c-creator-rewards-engage {

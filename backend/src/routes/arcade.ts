@@ -1,84 +1,33 @@
 import type express from 'express'
 import { getSessionFromRequest } from '../auth/session.js'
-import { applyArcadeUpvote, claimPuzzleReward, getUserPieceBalance, hasPuzzleClaim, listArcadePuzzles, registerOrUpdateArcadePuzzle } from '../piece-store.js'
+import { applyArcadeUpvote, claimPuzzleReward, getArcadeSolutionRecord, getUserPieceBalance, grantPieces, hasPuzzleClaim, listArcadePuzzleUpvotes } from '../piece-store.js'
 
 const ARCADE_SOLUTION_CREDIT_PIECES = 2
-const DEFAULT_ARCADE_SOLUTION_PASSWORD = 'angel'
-const ARCADE_EXAMPLE_SOLUTIONS: Record<string, { password: string; rewardPuzzleId: string }> = {
-	'game-of-gods': {
-		password: 'angel',
-		rewardPuzzleId: 'arcade-solution:game-of-gods',
-	},
-}
-
-function resolveArcadeSolution(exampleId: string): { expectedPassword: string; rewardPuzzleId: string } {
-	const solution = ARCADE_EXAMPLE_SOLUTIONS[exampleId]
-	return {
-		expectedPassword: String(solution?.password || DEFAULT_ARCADE_SOLUTION_PASSWORD).trim().toLowerCase(),
-		rewardPuzzleId: String(solution?.rewardPuzzleId || `arcade-solution:${exampleId}`).slice(0, 200),
-	}
-}
+const ARCADE_UPVOTE_CREDIT_PIECES = 2
 
 export function registerArcadeRoutes(app: express.Express): void {
-	app.get('/arcade/puzzles', async (req, res) => {
+	app.post('/arcade/upvote-status', async (req, res) => {
 		try {
 			const sessionData = getSessionFromRequest(req)
 			const voterId = sessionData?.session.user.id
-			res.json({ puzzles: await listArcadePuzzles(voterId) })
-		} catch (error) {
-			console.error('[arcade] failed to list puzzles', error)
-			res.status(500).json({ error: 'Failed to list puzzles' })
-		}
-	})
-
-	app.post('/arcade/puzzles', async (req, res) => {
-		try {
-			const sessionData = getSessionFromRequest(req)
-			if (!sessionData) {
-				res.status(401).json({ error: 'Unauthorized' })
-				return
-			}
-
-			const body = (req.body || {}) as {
-				puzzleId?: string
-				title?: string
-				genre?: string
-				thumbnail?: string
-				gameUrl?: string
-				authorLabel?: string
-			}
-			const puzzleId = String(body.puzzleId || '').trim()
-			const title = String(body.title || '').trim()
-			if (!puzzleId || !title) {
-				res.status(400).json({ error: 'puzzleId and title are required' })
-				return
-			}
-
-			const authorFromSession = sessionData.session.user.name || sessionData.session.user.email || 'Creator'
-			const authorLabel =
-				String(body.authorLabel || '').trim() || (authorFromSession.startsWith('by ') ? authorFromSession : `by ${authorFromSession}`)
-
-			const result = await registerOrUpdateArcadePuzzle(sessionData.session.user.id, {
-				puzzleId,
-				title,
-				genre: body.genre,
-				thumbnail: body.thumbnail,
-				gameUrl: body.gameUrl,
-				authorLabel,
-			})
-			if (result.ok === false) {
-				if (result.error === 'invalid_input') {
-					res.status(400).json({ error: 'Invalid puzzleId or title' })
-					return
+			const body = (req.body || {}) as { puzzleIds?: unknown }
+			const puzzleIds = (Array.isArray(body.puzzleIds) ? body.puzzleIds : [])
+				.map((value) => String(value || '').trim())
+				.filter(Boolean)
+				.slice(0, 200)
+			const rows = await listArcadePuzzleUpvotes(puzzleIds, voterId)
+			const byPuzzleId: Record<string, { likeCount: number; likedByMe: boolean; ownPuzzle: boolean }> = {}
+			for (const row of rows) {
+				byPuzzleId[row.puzzleId] = {
+					likeCount: row.likeCount,
+					likedByMe: row.likedByMe,
+					ownPuzzle: row.ownPuzzle,
 				}
-				res.status(409).json({ error: 'This puzzle ID is already registered to another creator' })
-				return
 			}
-
-			res.json({ success: true, puzzleId })
+			res.json({ success: true, byPuzzleId })
 		} catch (error) {
-			console.error('[arcade] failed to save puzzle', error)
-			res.status(500).json({ error: 'Failed to save puzzle' })
+			console.error('[arcade] failed to list upvote status', error)
+			res.status(500).json({ error: 'Failed to fetch upvote status' })
 		}
 	})
 
@@ -95,15 +44,27 @@ export function registerArcadeRoutes(app: express.Express): void {
 				res.status(400).json({ error: 'puzzleId is required' })
 				return
 			}
+			const solution = await getArcadeSolutionRecord(puzzleId)
+			if (!solution) {
+				res.status(400).json({ error: 'Unknown puzzle' })
+				return
+			}
+			if (solution.creatorUserId && solution.creatorUserId === sessionData.session.user.id) {
+				res.status(400).json({ error: 'Cannot upvote your own puzzle' })
+				return
+			}
 
 			const result = await applyArcadeUpvote(sessionData.session.user.id, puzzleId)
 			if (result.ok === false) {
-				if (result.error === 'unknown_puzzle') {
-					res.status(404).json({ error: 'Unknown puzzle' })
-					return
-				}
-				res.status(400).json({ error: 'Cannot upvote your own puzzle' })
+				res.status(400).json({ error: 'Unknown puzzle' })
 				return
+			}
+			if (result.newUpvote) {
+				await grantPieces(
+					solution.creatorUserId,
+					ARCADE_UPVOTE_CREDIT_PIECES,
+					`Arcade upvote:${puzzleId}:voter=${sessionData.session.user.id}`
+				)
 			}
 
 			res.json({
@@ -125,25 +86,29 @@ export function registerArcadeRoutes(app: express.Express): void {
 				return
 			}
 
-			const body = (req.body || {}) as { exampleId?: string; password?: string }
-			const exampleId = String(body.exampleId || '').trim().toLowerCase()
+			const body = (req.body || {}) as { puzzleId?: string; exampleId?: string; password?: string }
+			const rawPuzzleId = body.puzzleId || body.exampleId || ''
+			const puzzleId = String(rawPuzzleId).trim().toLowerCase()
 			const password = String(body.password || '').trim().toLowerCase()
-			if (!exampleId || !password) {
-				res.status(400).json({ error: 'exampleId and password are required' })
+			if (!puzzleId || !password) {
+				res.status(400).json({ error: 'puzzleId and password are required' })
 				return
 			}
-
-			const { expectedPassword, rewardPuzzleId } = resolveArcadeSolution(exampleId)
-			if (password !== expectedPassword) {
+			const solution = await getArcadeSolutionRecord(puzzleId)
+			if (!solution) {
+				res.status(400).json({ error: 'Unknown puzzle' })
+				return
+			}
+			if (password !== solution.password) {
 				res.status(400).json({ error: 'Incorrect solve password' })
 				return
 			}
 
 			const nextBalance = await claimPuzzleReward({
 				targetUserId: sessionData.session.user.id,
-				puzzleId: rewardPuzzleId,
+				puzzleId: solution.rewardPuzzleId,
 				amount: ARCADE_SOLUTION_CREDIT_PIECES,
-				reason: `Arcade solution verify:${exampleId}`,
+				reason: `Arcade solution verify:${puzzleId}`,
 			})
 			if (nextBalance === null) {
 				const currentBalance = await getUserPieceBalance(sessionData.session.user.id)
@@ -173,35 +138,36 @@ export function registerArcadeRoutes(app: express.Express): void {
 	app.post('/arcade/solution-status', async (req, res) => {
 		try {
 			const sessionData = getSessionFromRequest(req)
-			const body = (req.body || {}) as { exampleIds?: unknown }
-			const rawExampleIds = Array.isArray(body.exampleIds) ? body.exampleIds : []
-			const exampleIds = rawExampleIds
+			const body = (req.body || {}) as { puzzleIds?: unknown; exampleIds?: unknown }
+			const rawPuzzleIds = Array.isArray(body.puzzleIds) ? body.puzzleIds : Array.isArray(body.exampleIds) ? body.exampleIds : []
+			const puzzleIds = rawPuzzleIds
 				.map((id) => String(id || '').trim().toLowerCase())
 				.filter(Boolean)
 				.slice(0, 100)
 
-			const solvedByExampleId: Record<string, boolean> = {}
-			for (const exampleId of exampleIds) {
-				solvedByExampleId[exampleId] = false
+			const solvedByPuzzleId: Record<string, boolean> = {}
+			for (const puzzleId of puzzleIds) {
+				solvedByPuzzleId[puzzleId] = false
 			}
 
-			if (!sessionData || exampleIds.length === 0) {
-				res.json({ success: true, solvedByExampleId })
+			if (!sessionData || puzzleIds.length === 0) {
+				res.json({ success: true, solvedByPuzzleId })
 				return
 			}
 
 			const checks = await Promise.all(
-				exampleIds.map(async (exampleId) => {
-					const { rewardPuzzleId } = resolveArcadeSolution(exampleId)
+				puzzleIds.map(async (puzzleId) => {
+					const solution = await getArcadeSolutionRecord(puzzleId)
+					const rewardPuzzleId = solution?.rewardPuzzleId || `arcade-solution:${puzzleId}`
 					const solved = await hasPuzzleClaim(sessionData.session.user.id, rewardPuzzleId)
-					return { exampleId, solved }
+					return { puzzleId, solved }
 				})
 			)
 			for (const item of checks) {
-				solvedByExampleId[item.exampleId] = item.solved
+				solvedByPuzzleId[item.puzzleId] = item.solved
 			}
 
-			res.json({ success: true, solvedByExampleId })
+			res.json({ success: true, solvedByPuzzleId })
 		} catch (error) {
 			console.error('[arcade] failed to fetch solution status', error)
 			res.status(500).json({ error: 'Failed to fetch solution status' })

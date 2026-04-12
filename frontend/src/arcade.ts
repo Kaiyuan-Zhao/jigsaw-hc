@@ -4,21 +4,18 @@ import { htmlToElement } from './lib/dom'
 import { puzzleSVG } from './ui/puzzle-svg'
 import { PASTEL_COLORS } from './lib/palette'
 import type { ApiErrorResponse, AuthMeResponse, AuthUser } from './types/auth'
-import type { ArcadeApiPuzzle, ExampleCard } from './types/arcade'
+import type { UserPuzzleCard } from './types/arcade'
 type Notch = { top: EdgeType; right: EdgeType; bottom: EdgeType; left: EdgeType }
 
 const ARCADE_PASTEL_COLORS = PASTEL_COLORS
 const HERO_THUMB = new URL('./assets/vite.svg', import.meta.url).href
 
-const EXAMPLES: ExampleCard[] = [
-  { title: 'Game of Gods', author: 'by Ken Zhao', genre: 'LLM Logic Puzzle', thumbnail: new URL('./assets/arcade_thumbnails/angel.jpg', import.meta.url).href, likes: 24, gameUrl: 'https://game-of-gods.vercel.app/', exampleId: 'game-of-gods', password: 'angel' },
-  { title: 'Hidden Vault', author: 'by @ctf_master', genre: 'CTF-style challenge', thumbnail: HERO_THUMB, likes: 31, password: 'angel' },
-  { title: 'Ghost Protocol', author: 'by @arg_enthusiast', genre: 'ARG-inspired site', thumbnail: HERO_THUMB, likes: 19, password: 'angel' },
-  { title: 'Neural Maze', author: 'by @ai_puzzler', genre: 'AI puzzle', thumbnail: HERO_THUMB, likes: 42, password: 'angel' },
-  { title: 'Escape Box', author: 'by @escape_art', genre: 'Web Escape Room', thumbnail: HERO_THUMB, likes: 15, password: 'angel' },
-  { title: 'Pixel Hunt', author: 'by @retro_gamer', genre: 'Find the invisible pixel', thumbnail: HERO_THUMB, likes: 67, password: 'angel' },
-  { title: 'Decryptor', author: 'by @crypto_kid', genre: 'Cipher challenge', thumbnail: HERO_THUMB, likes: 88, password: 'angel' },
-  { title: 'Phantom Signal', author: 'by @spooky_dev', genre: 'Audio ARG', thumbnail: HERO_THUMB, likes: 54, password: 'angel' },
+const USER_PUZZLES: UserPuzzleCard[] = [
+  // Set creatorUserId to the Hack Club OpenID user ID to pre-disable self-like.
+  { puzzleId: 'game-of-gods', title: 'Game of Gods', author: 'by Ken Zhao', genre: 'LLM Logic Puzzle', thumbnail: new URL('./assets/arcade_thumbnails/angel.jpg', import.meta.url).href, baseLikes: 0, gameUrl: 'https://game-of-gods.vercel.app/' },
+  { puzzleId: 'hidden-vault', title: 'Hidden Vault', author: 'by @ctf_master', genre: 'CTF-style challenge', thumbnail: HERO_THUMB, baseLikes: 2 },
+  { puzzleId: 'ghost-protocol', title: 'Ghost Protocol', author: 'by @arg_enthusiast', genre: 'ARG site', thumbnail: HERO_THUMB, baseLikes: 16 },
+  { puzzleId: 'piece-platformer', title: 'Piece Platformer', author: 'by @retro_kid', genre: 'Retro puzzle game', thumbnail: HERO_THUMB, baseLikes: 5 },
 ]
 
 const HEART_ICON_PATH =
@@ -87,29 +84,6 @@ function buildPiecePanel(user: AuthUser): string {
   `
 }
 
-function buildCreatorPuzzlePanel(): string {
-  return `
-    <section class="c-arcade-creator-panel">
-      <h2 class="c-arcade-creator-title">List your puzzle in the arcade</h2>
-      <p class="c-arcade-creator-hint">Use the same <code class="c-arcade-code">puzzleId</code> as in your game’s reward button. Upvotes count only from signed-in Hack Club accounts; each unique upvote adds 2 pieces to your balance.</p>
-      <form class="c-creator-arcade-form">
-        <label class="c-arcade-form-label" for="arcade-self-puzzle-id">Puzzle ID</label>
-        <input id="arcade-self-puzzle-id" name="puzzleId" class="c-arcade-form-input" type="text" required autocomplete="off" />
-        <label class="c-arcade-form-label" for="arcade-self-title">Title</label>
-        <input id="arcade-self-title" name="title" class="c-arcade-form-input" type="text" required />
-        <label class="c-arcade-form-label" for="arcade-self-genre">Genre (optional)</label>
-        <input id="arcade-self-genre" name="genre" class="c-arcade-form-input" type="text" />
-        <label class="c-arcade-form-label" for="arcade-self-thumb">Thumbnail URL (optional)</label>
-        <input id="arcade-self-thumb" name="thumbnail" class="c-arcade-form-input" type="url" />
-        <label class="c-arcade-form-label" for="arcade-self-game-url">Game URL (optional)</label>
-        <input id="arcade-self-game-url" name="gameUrl" class="c-arcade-form-input" type="url" />
-        <button class="c-arcade-form-submit" type="submit">Save to arcade</button>
-        <p class="c-creator-arcade-status" aria-live="polite"></p>
-      </form>
-    </section>
-  `
-}
-
 function escapeAttr(value: string): string {
   return value
     .replace(/&/g, '&amp;')
@@ -124,32 +98,20 @@ function escapeHtml(value: string): string {
     .replace(/>/g, '&gt;')
 }
 
-function slugify(value: string): string {
-  return value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
+type PuzzleLikeOptions = {
+  count: number
+  liked: boolean
+  ownPuzzle: boolean
+  disabled: boolean
+  titleAttr: string
+  puzzleId: string
+  seedCount: number
 }
 
 function buildCardInner(
-	entry: { title: string; genre: string; author: string; thumbnail: string; gameUrl?: string | null },
-	index: number,
-  likeOpts:
-    | {
-        mode: 'demo'
-        count: number
-        demoTitle: string
-        exampleId?: string
-      }
-    | {
-        mode: 'upvote'
-        count: number
-        liked: boolean
-        disabled: boolean
-        titleAttr: string
-        puzzleId: string
-        exampleId?: string
-      }
+  entry: UserPuzzleCard,
+  index: number,
+  likeOpts: PuzzleLikeOptions
 ): string {
   const fill = ARCADE_PASTEL_COLORS[index % ARCADE_PASTEL_COLORS.length]
   const safeUrl = entry.gameUrl?.trim()
@@ -158,34 +120,28 @@ function buildCardInner(
     ? `<a class="c-arcade-thumb-link" href="${escapeAttr(safeUrl)}" target="_self" rel="noopener noreferrer"><img class="c-arcade-thumb" src="${escapeAttr(entry.thumbnail)}" alt="${escapeAttr(entry.title)} thumbnail" /></a>`
     : `<img class="c-arcade-thumb" src="${escapeAttr(entry.thumbnail)}" alt="${escapeAttr(entry.title)} thumbnail" />`
 
-	let likeBlock: string
-	if (likeOpts.mode === 'demo') {
-		likeBlock = `<span class="c-like-demo-pill" role="text" title="${escapeAttr(likeOpts.demoTitle)}">
-              <span class="c-like-icon">${icon(15, false)}</span>
-              <span class="c-like-count">${likeOpts.count}</span>
-            </span>`
-	} else {
-		const likedClass = likeOpts.liked ? ' is-liked' : ''
-		const likedStr = likeOpts.liked ? 'true' : 'false'
-		const pressedStr = likeOpts.liked ? 'true' : 'false'
-		const disabledAttr = likeOpts.disabled ? ' disabled' : ''
-		likeBlock = `<button class="c-like-btn${likedClass}" type="button" data-upvote-api="1" data-puzzle-id="${escapeAttr(likeOpts.puzzleId)}" data-liked="${likedStr}" data-base-count="${likeOpts.count}" aria-pressed="${pressedStr}" aria-label="${escapeAttr(likeOpts.titleAttr)}" title="${escapeAttr(likeOpts.titleAttr)}"${disabledAttr}>
+  const likedClass = likeOpts.liked ? ' is-liked' : ''
+  const likedStr = likeOpts.liked ? 'true' : 'false'
+  const pressedStr = likeOpts.liked ? 'true' : 'false'
+  const disabledAttr = likeOpts.disabled ? ' disabled' : ''
+  const verificationPuzzleId = entry.puzzleId.trim().toLowerCase()
+  const ownPuzzleAttr = likeOpts.ownPuzzle ? ' data-own-puzzle="1"' : ''
+  const ownPuzzleInputAttrs = likeOpts.ownPuzzle ? ' value="This is your puzzle!" disabled readonly' : ''
+  const ownPuzzleButtonAttrs = likeOpts.ownPuzzle
+    ? ' c-arcade-solution-submit--success" type="button" aria-label="This is your puzzle" title="This is your puzzle" disabled'
+    : ' c-arcade-solution-submit--default" type="submit" aria-label="Verify solve password" title="Verify"'
+  const solutionButtonIcon = likeOpts.ownPuzzle ? verifyCheckIcon(14) : verifyEnterIcon(14)
+  const likeBlock = `<button class="c-like-btn${likedClass}" type="button" data-upvote-api="1" data-puzzle-id="${escapeAttr(likeOpts.puzzleId)}" data-liked="${likedStr}" data-base-count="${likeOpts.count}" data-seed-count="${likeOpts.seedCount}" aria-pressed="${pressedStr}" aria-label="${escapeAttr(likeOpts.titleAttr)}" title="${escapeAttr(likeOpts.titleAttr)}"${disabledAttr}>
               <span class="c-like-icon">${icon(15, likeOpts.liked)}</span>
               <span class="c-like-count">${likeOpts.count}</span>
             </button>`
-	}
-
-  const normalizedExampleId =
-    likeOpts.exampleId
-      ? likeOpts.exampleId.trim().toLowerCase()
-      : ''
-  const verificationMarkup = normalizedExampleId
+  const verificationMarkup = verificationPuzzleId
     ? `
-      <form class="c-arcade-solution-form c-arcade-solution-form--top" data-example-id="${escapeAttr(normalizedExampleId)}">
-        <input type="hidden" name="exampleId" value="${escapeAttr(normalizedExampleId)}" />
+      <form class="c-arcade-solution-form c-arcade-solution-form--top${likeOpts.ownPuzzle ? ' is-solved' : ''}" data-puzzle-id="${escapeAttr(verificationPuzzleId)}"${ownPuzzleAttr}>
+        <input type="hidden" name="puzzleId" value="${escapeAttr(verificationPuzzleId)}" />
         <div class="c-arcade-solution-controls">
-          <input id="arcade-solution-${index}" class="c-arcade-solution-input" type="text" autocomplete="off" placeholder="Solve password" aria-label="Solve password" required />
-          <button class="c-arcade-solution-submit c-arcade-solution-submit--default" type="submit" aria-label="Verify solve password" title="Verify">${verifyEnterIcon(14)}</button>
+          <input id="arcade-solution-${index}" class="c-arcade-solution-input" type="text" autocomplete="off" placeholder="Solve password" aria-label="Solve password" required${ownPuzzleInputAttrs} />
+          <button class="c-arcade-solution-submit${ownPuzzleButtonAttrs}>${solutionButtonIcon}</button>
         </div>
       </form>
     `
@@ -217,77 +173,67 @@ function buildCardInner(
   `
 }
 
-function buildDemoCard(entry: ExampleCard, index: number): string {
-  const exampleId = entry.exampleId || `demo-${slugify(entry.title)}-${index}`
+type UpvoteState = {
+  likeCount: number
+  likedByMe: boolean
+  ownPuzzle: boolean
+}
+
+function buildUserPuzzleCard(
+  entry: UserPuzzleCard,
+  index: number,
+  auth: AuthMeResponse | null,
+  byPuzzleId: Record<string, UpvoteState>
+): string {
+  const signedIn = Boolean(auth?.authenticated)
+  const userId = auth?.authenticated ? auth.user?.id : undefined
+  const ownPuzzleFromEntry = Boolean(entry.creatorUserId && userId && entry.creatorUserId === userId)
+  const seedCount = Math.max(0, Math.floor(entry.baseLikes || 0))
+  const upvoteState = byPuzzleId[entry.puzzleId] || { likeCount: 0, likedByMe: false, ownPuzzle: false }
+  const ownPuzzle = ownPuzzleFromEntry || Boolean(upvoteState.ownPuzzle)
+  const count = seedCount + Math.max(0, Math.floor(upvoteState.likeCount))
+  const liked = Boolean(upvoteState.likedByMe)
+  let titleAttr = `Upvote ${entry.title}`
+  if (!signedIn) {
+    titleAttr = 'Sign in with Hack Club OpenID to like puzzles'
+  } else if (ownPuzzle) {
+    titleAttr = 'You cannot like your own puzzle'
+  } else if (liked) {
+    titleAttr = 'You already liked this puzzle'
+  } else {
+    titleAttr = `Like ${entry.title}`
+  }
   return buildCardInner(entry, index, {
-    mode: 'demo',
-    count: entry.likes,
-    demoTitle: 'Demo placeholder — only registered puzzles accept upvotes, and you must be signed in.',
-    exampleId,
+    count,
+    liked,
+    ownPuzzle,
+    disabled: !signedIn || ownPuzzle || liked,
+    titleAttr,
+    puzzleId: entry.puzzleId,
+    seedCount,
   })
 }
 
-function buildRegisteredCard(entry: ArcadeApiPuzzle, index: number, auth: AuthMeResponse | null): string {
-  const userId = auth?.authenticated ? auth.user?.id : undefined
-  const ownPuzzle = Boolean(userId && userId === entry.creatorUserId)
-  const signedIn = Boolean(auth?.authenticated)
-  const liked = entry.likedByMe
-  let titleAttr = `Upvote ${entry.title}`
-  if (!signedIn) {
-    titleAttr = 'Sign in to upvote (each unique upvote gives the creator 2 puzzle pieces)'
-  } else if (ownPuzzle) {
-    titleAttr = 'You cannot upvote your own puzzle'
-  } else if (liked) {
-    titleAttr = 'You already upvoted this puzzle'
-  } else {
-    titleAttr = `Upvote ${entry.title} (creator earns 2 puzzle pieces)`
-  }
-  const disabled = !signedIn || ownPuzzle || liked
-  return buildCardInner(
-    {
-      title: entry.title,
-      genre: entry.genre,
-      author: entry.authorLabel,
-      thumbnail: entry.thumbnail,
-      gameUrl: entry.gameUrl,
-    },
-    index,
-    {
-      mode: 'upvote',
-      count: entry.likeCount,
-      liked,
-      disabled,
-      titleAttr,
-      puzzleId: entry.puzzleId,
-      exampleId: `registered-${entry.puzzleId}`,
-    }
-  )
+function buildGalleryCards(auth: AuthMeResponse | null, byPuzzleId: Record<string, UpvoteState>): string {
+  return USER_PUZZLES.map((entry, index) => buildUserPuzzleCard(entry, index, auth, byPuzzleId)).join('')
 }
 
-function buildGalleryCards(apiPuzzles: ArcadeApiPuzzle[], auth: AuthMeResponse | null): string {
-  const registered = apiPuzzles.map((p, i) => buildRegisteredCard(p, i, auth)).join('')
-  const demos = EXAMPLES.map((e, j) => buildDemoCard(e, j + apiPuzzles.length)).join('')
-  return registered + demos
-}
-
-function buildArcadePage(auth: AuthMeResponse | null, apiPuzzles: ArcadeApiPuzzle[]): HTMLElement {
+function buildArcadePage(auth: AuthMeResponse | null, byPuzzleId: Record<string, UpvoteState>): HTMLElement {
   const user = auth?.authenticated ? auth.user : undefined
   const piecePanel = user ? buildPiecePanel(user) : ''
-  const creatorFormPanel = user ? buildCreatorPuzzlePanel() : ''
 
   return htmlToElement(`
 <section class="c-arcade-gallery-page">
   <div class="c-arcade-gallery-inner">
     <header class="c-arcade-gallery-head">
       <h1 class="c-arcade-gallery-title c-page-title">Arcade Gallery</h1>
-      <p class="c-arcade-gallery-subtitle c-page-chip">Registered puzzles award their creator 2 puzzle pieces per unique upvote. Upvoting requires a signed-in Hack Club account.</p>
+      <p class="c-arcade-gallery-subtitle c-page-chip">Puzzle cards are manually curated. Likes and solve rewards are tied to your signed-in Hack Club OpenID account.</p>
       <p class="c-arcade-upvote-status" aria-live="polite"></p>
       <a href="/" class="c-arcade-back-link">Back to Home</a>
     </header>
     ${piecePanel}
-    ${creatorFormPanel}
     <div class="c-arcade-gallery-grid">
-      ${buildGalleryCards(apiPuzzles, auth)}
+      ${buildGalleryCards(auth, byPuzzleId)}
     </div>
   </div>
 </section>
@@ -295,6 +241,10 @@ function buildArcadePage(auth: AuthMeResponse | null, apiPuzzles: ArcadeApiPuzzl
 }
 
 type UpvoteOkResponse = { success?: boolean; likeCount?: number; newUpvote?: boolean }
+type UpvoteStatusResponse = {
+  success?: boolean
+  byPuzzleId?: Record<string, { likeCount?: number; likedByMe?: boolean; ownPuzzle?: boolean }>
+}
 type VerifySolutionResponse = {
   success?: boolean
   verified?: boolean
@@ -304,7 +254,7 @@ type VerifySolutionResponse = {
 }
 type SolutionStatusResponse = {
   success?: boolean
-  solvedByExampleId?: Record<string, boolean>
+  solvedByPuzzleId?: Record<string, boolean>
 }
 
 function setupLikes(root: HTMLElement): void {
@@ -328,7 +278,9 @@ function setupLikes(root: HTMLElement): void {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ puzzleId }),
         })
-        const likeCount = Number(payload.likeCount ?? button.dataset.baseCount ?? '0')
+        const seedCount = Number(button.dataset.seedCount ?? '0')
+        const dbLikeCount = Number(payload.likeCount ?? '0')
+        const likeCount = seedCount + Math.max(0, dbLikeCount)
         const countEl = button.querySelector<HTMLElement>('.c-like-count')
         const iconWrap = button.querySelector<HTMLElement>('.c-like-icon')
         button.dataset.baseCount = String(likeCount)
@@ -337,8 +289,8 @@ function setupLikes(root: HTMLElement): void {
         button.classList.add('is-liked')
         if (countEl) countEl.textContent = String(likeCount)
         if (iconWrap) iconWrap.innerHTML = icon(15, true)
-        button.setAttribute('aria-label', 'You already upvoted this puzzle')
-        button.title = 'You already upvoted this puzzle'
+        button.setAttribute('aria-label', 'You already liked this puzzle')
+        button.title = 'You already liked this puzzle'
       } catch (error) {
         if (upvoteStatus) {
           setStatusMessage(upvoteStatus, error instanceof Error ? error.message : 'Upvote failed', 'error')
@@ -349,12 +301,18 @@ function setupLikes(root: HTMLElement): void {
   })
 }
 
-function setupDemoSolutionVerification(root: HTMLElement): void {
+function setupSolutionVerification(root: HTMLElement): void {
   const forms = root.querySelectorAll<HTMLFormElement>('.c-arcade-solution-form')
-  const markSolved = (form: HTMLFormElement, input: HTMLInputElement, button: HTMLButtonElement, detail = 'Verified'): void => {
+  const markSolved = (
+    form: HTMLFormElement,
+    input: HTMLInputElement,
+    button: HTMLButtonElement,
+    detail = 'Verified',
+    solvedText = 'solved!'
+  ): void => {
     setSolutionSubmitVisual(button, 'success', detail)
     form.classList.add('is-solved')
-    input.value = 'solved!'
+    input.value = solvedText
     input.disabled = true
     input.readOnly = false
     button.disabled = true
@@ -364,6 +322,11 @@ function setupDemoSolutionVerification(root: HTMLElement): void {
     const input = form.querySelector<HTMLInputElement>('.c-arcade-solution-input')
     const button = form.querySelector<HTMLButtonElement>('.c-arcade-solution-submit')
     if (!input || !button) return
+    const ownPuzzle = form.getAttribute('data-own-puzzle') === '1'
+    if (ownPuzzle) {
+      markSolved(form, input, button, 'This is your puzzle!', 'This is your puzzle!')
+      return
+    }
 
     input.addEventListener('input', () => {
       if (form.classList.contains('is-solved')) return
@@ -375,12 +338,12 @@ function setupDemoSolutionVerification(root: HTMLElement): void {
     form.addEventListener('submit', async (event) => {
       event.preventDefault()
       if (form.classList.contains('is-solved')) return
-      const fromForm = new FormData(form).get('exampleId')
-      const exampleId = String(fromForm || form.getAttribute('data-example-id') || form.dataset.exampleId || '')
+      const fromForm = new FormData(form).get('puzzleId')
+      const puzzleId = String(fromForm || form.getAttribute('data-puzzle-id') || form.dataset.puzzleId || '')
         .trim()
         .toLowerCase()
       const entered = input.value.trim()
-      if (!exampleId) return
+      if (!puzzleId) return
       if (!entered) {
         setSolutionSubmitVisual(button, 'error', 'Enter solve password')
         return
@@ -394,7 +357,7 @@ function setupDemoSolutionVerification(root: HTMLElement): void {
           method: 'POST',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ exampleId, password: entered }),
+          body: JSON.stringify({ puzzleId, password: entered }),
         })
         const newCredit = Boolean(payload.newCredit)
         const amount = Number(payload.amount || 0)
@@ -418,16 +381,16 @@ function setupDemoSolutionVerification(root: HTMLElement): void {
     .map((form) => {
       const input = form.querySelector<HTMLInputElement>('.c-arcade-solution-input')
       const button = form.querySelector<HTMLButtonElement>('.c-arcade-solution-submit')
-      const fromDataset = String(form.getAttribute('data-example-id') || form.dataset.exampleId || '')
+      const fromDataset = String(form.getAttribute('data-puzzle-id') || form.dataset.puzzleId || '')
         .trim()
         .toLowerCase()
       if (!input || !button || !fromDataset) return null
-      return { form, input, button, exampleId: fromDataset }
+      return { form, input, button, puzzleId: fromDataset }
     })
-    .filter((item): item is { form: HTMLFormElement; input: HTMLInputElement; button: HTMLButtonElement; exampleId: string } => Boolean(item))
+    .filter((item): item is { form: HTMLFormElement; input: HTMLInputElement; button: HTMLButtonElement; puzzleId: string } => Boolean(item))
 
-  const exampleIds = Array.from(new Set(items.map((item) => item.exampleId)))
-  if (!exampleIds.length) return
+  const puzzleIds = Array.from(new Set(items.map((item) => item.puzzleId)))
+  if (!puzzleIds.length) return
 
   void (async () => {
     try {
@@ -435,11 +398,11 @@ function setupDemoSolutionVerification(root: HTMLElement): void {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ exampleIds }),
+        body: JSON.stringify({ puzzleIds }),
       })
-      const solvedByExampleId = payload.solvedByExampleId || {}
-      items.forEach(({ form, input, button, exampleId }) => {
-        if (solvedByExampleId[exampleId]) {
+      const solvedByPuzzleId = payload.solvedByPuzzleId || {}
+      items.forEach(({ form, input, button, puzzleId }) => {
+        if (solvedByPuzzleId[puzzleId]) {
           markSolved(form, input, button, 'Verified. Already solved.')
         }
       })
@@ -454,61 +417,6 @@ function setStatusMessage(statusEl: HTMLElement, message: string, type: 'error' 
   statusEl.classList.remove('is-error', 'is-success')
   if (type === 'error') statusEl.classList.add('is-error')
   if (type === 'success') statusEl.classList.add('is-success')
-}
-
-async function refreshArcadeGallery(root: HTMLElement): Promise<void> {
-  const [auth, puzzles] = await Promise.all([fetchAuthState(), fetchArcadePuzzles()])
-  mountArcade(root, auth, puzzles)
-}
-
-function setupCreatorArcadeForm(root: HTMLElement, auth: AuthMeResponse | null): void {
-  if (!auth?.authenticated) return
-
-  const form = root.querySelector<HTMLFormElement>('.c-creator-arcade-form')
-  const status = root.querySelector<HTMLElement>('.c-creator-arcade-status')
-  if (!form || !status) return
-
-  form.addEventListener('submit', async (event) => {
-    event.preventDefault()
-    const formData = new FormData(form)
-    const puzzleId = String(formData.get('puzzleId') || '').trim()
-    const title = String(formData.get('title') || '').trim()
-    const genre = String(formData.get('genre') || '').trim()
-    const thumbnail = String(formData.get('thumbnail') || '').trim()
-    const gameUrl = String(formData.get('gameUrl') || '').trim()
-
-    if (!puzzleId || !title) {
-      setStatusMessage(status, 'Puzzle ID and title are required.', 'error')
-      return
-    }
-
-    const submitButton = form.querySelector<HTMLButtonElement>('.c-arcade-form-submit')
-    if (submitButton) submitButton.disabled = true
-    setStatusMessage(status, 'Saving…', 'pending')
-
-    try {
-      await fetchJson<ApiErrorResponse>('/arcade/puzzles', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          puzzleId,
-          title,
-          genre: genre || undefined,
-          thumbnail: thumbnail || undefined,
-          gameUrl: gameUrl || undefined,
-        }),
-      })
-
-      setStatusMessage(status, `Your puzzle “${title}” is listed in the arcade.`, 'success')
-      form.reset()
-      await refreshArcadeGallery(root)
-    } catch (error) {
-      setStatusMessage(status, error instanceof Error ? error.message : 'Failed to save', 'error')
-    } finally {
-      if (submitButton) submitButton.disabled = false
-    }
-  })
 }
 
 function setupPieceTestControls(root: HTMLElement, auth: AuthMeResponse | null): void {
@@ -551,21 +459,39 @@ function setupPieceTestControls(root: HTMLElement, auth: AuthMeResponse | null):
   })
 }
 
-function mountArcade(root: HTMLElement, auth: AuthMeResponse | null, apiPuzzles: ArcadeApiPuzzle[]): void {
+function mountArcade(root: HTMLElement, auth: AuthMeResponse | null, byPuzzleId: Record<string, UpvoteState>): void {
   root.innerHTML = ''
-  root.appendChild(buildArcadePage(auth, apiPuzzles))
+  root.appendChild(buildArcadePage(auth, byPuzzleId))
   setupLikes(root)
   setupPieceTestControls(root, auth)
-  setupCreatorArcadeForm(root, auth)
-  setupDemoSolutionVerification(root)
+  setupSolutionVerification(root)
 }
 
-async function fetchArcadePuzzles(): Promise<ArcadeApiPuzzle[]> {
+async function fetchArcadeUpvoteState(): Promise<Record<string, UpvoteState>> {
+  const puzzleIds = USER_PUZZLES.map((entry) => entry.puzzleId)
+  const fallback: Record<string, UpvoteState> = {}
+  puzzleIds.forEach((puzzleId) => {
+    fallback[puzzleId] = { likeCount: 0, likedByMe: false, ownPuzzle: false }
+  })
   try {
-    const data = await fetchJson<{ puzzles?: ArcadeApiPuzzle[] }>('/arcade/puzzles', { credentials: 'include' })
-    return Array.isArray(data.puzzles) ? data.puzzles : []
+    const data = await fetchJson<ApiErrorResponse & UpvoteStatusResponse>('/arcade/upvote-status', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ puzzleIds }),
+    })
+    const byPuzzleId = data.byPuzzleId || {}
+    puzzleIds.forEach((puzzleId) => {
+      const state = byPuzzleId[puzzleId]
+      fallback[puzzleId] = {
+        likeCount: Math.max(0, Number(state?.likeCount || 0)),
+        likedByMe: Boolean(state?.likedByMe),
+        ownPuzzle: Boolean(state?.ownPuzzle),
+      }
+    })
+    return fallback
   } catch {
-    return []
+    return fallback
   }
 }
 
@@ -578,10 +504,10 @@ async function fetchAuthState(): Promise<AuthMeResponse | null> {
 }
 
 export function initArcade(root: HTMLElement): void {
-  mountArcade(root, null, [])
+  mountArcade(root, null, {})
   const hydrate = async (): Promise<void> => {
-    const [auth, puzzles] = await Promise.all([fetchAuthState(), fetchArcadePuzzles()])
-    mountArcade(root, auth, puzzles)
+    const [auth, upvotes] = await Promise.all([fetchAuthState(), fetchArcadeUpvoteState()])
+    mountArcade(root, auth, upvotes)
   }
   void hydrate()
 }
