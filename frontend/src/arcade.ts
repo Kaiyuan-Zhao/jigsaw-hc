@@ -11,14 +11,14 @@ const ARCADE_PASTEL_COLORS = PASTEL_COLORS
 const HERO_THUMB = new URL('./assets/vite.svg', import.meta.url).href
 
 const EXAMPLES: ExampleCard[] = [
-  { title: 'Game of Gods', author: 'by Ken Zhao', genre: 'LLM Logic Puzzle', thumbnail: new URL('./assets/arcade_thumbnails/angel.jpg', import.meta.url).href, likes: 24, gameUrl: 'https://game-of-gods.vercel.app/' },
-  { title: 'Hidden Vault', author: 'by @ctf_master', genre: 'CTF-style challenge', thumbnail: HERO_THUMB, likes: 31 },
-  { title: 'Ghost Protocol', author: 'by @arg_enthusiast', genre: 'ARG-inspired site', thumbnail: HERO_THUMB, likes: 19 },
-  { title: 'Neural Maze', author: 'by @ai_puzzler', genre: 'AI puzzle', thumbnail: HERO_THUMB, likes: 42 },
-  { title: 'Escape Box', author: 'by @escape_art', genre: 'Web Escape Room', thumbnail: HERO_THUMB, likes: 15 },
-  { title: 'Pixel Hunt', author: 'by @retro_gamer', genre: 'Find the invisible pixel', thumbnail: HERO_THUMB, likes: 67 },
-  { title: 'Decryptor', author: 'by @crypto_kid', genre: 'Cipher challenge', thumbnail: HERO_THUMB, likes: 88 },
-  { title: 'Phantom Signal', author: 'by @spooky_dev', genre: 'Audio ARG', thumbnail: HERO_THUMB, likes: 54 },
+  { title: 'Game of Gods', author: 'by Ken Zhao', genre: 'LLM Logic Puzzle', thumbnail: new URL('./assets/arcade_thumbnails/angel.jpg', import.meta.url).href, likes: 24, gameUrl: 'https://game-of-gods.vercel.app/', exampleId: 'game-of-gods', password: 'angel' },
+  { title: 'Hidden Vault', author: 'by @ctf_master', genre: 'CTF-style challenge', thumbnail: HERO_THUMB, likes: 31, password: 'angel' },
+  { title: 'Ghost Protocol', author: 'by @arg_enthusiast', genre: 'ARG-inspired site', thumbnail: HERO_THUMB, likes: 19, password: 'angel' },
+  { title: 'Neural Maze', author: 'by @ai_puzzler', genre: 'AI puzzle', thumbnail: HERO_THUMB, likes: 42, password: 'angel' },
+  { title: 'Escape Box', author: 'by @escape_art', genre: 'Web Escape Room', thumbnail: HERO_THUMB, likes: 15, password: 'angel' },
+  { title: 'Pixel Hunt', author: 'by @retro_gamer', genre: 'Find the invisible pixel', thumbnail: HERO_THUMB, likes: 67, password: 'angel' },
+  { title: 'Decryptor', author: 'by @crypto_kid', genre: 'Cipher challenge', thumbnail: HERO_THUMB, likes: 88, password: 'angel' },
+  { title: 'Phantom Signal', author: 'by @spooky_dev', genre: 'Audio ARG', thumbnail: HERO_THUMB, likes: 54, password: 'angel' },
 ]
 
 const HEART_ICON_PATH =
@@ -26,6 +26,44 @@ const HEART_ICON_PATH =
 
 function icon(size = 20, filled = false): string {
   return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="${filled ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${HEART_ICON_PATH}</svg>`
+}
+
+function verifyEnterIcon(size = 14): string {
+  return `<svg class="c-arcade-solution-submit-svg" viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>`
+}
+
+function verifyCheckIcon(size = 14): string {
+  return `<svg class="c-arcade-solution-submit-svg" viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>`
+}
+
+function verifyXIcon(size = 14): string {
+  return `<svg class="c-arcade-solution-submit-svg" viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>`
+}
+
+type SolutionSubmitVisual = 'default' | 'success' | 'error'
+
+function setSolutionSubmitVisual(button: HTMLButtonElement, visual: SolutionSubmitVisual, detail?: string): void {
+  button.classList.remove('c-arcade-solution-submit--default', 'c-arcade-solution-submit--success', 'c-arcade-solution-submit--error')
+  if (visual === 'success') {
+    button.classList.add('c-arcade-solution-submit--success')
+    button.innerHTML = verifyCheckIcon(14)
+    const label = detail || 'Verified'
+    button.setAttribute('aria-label', label)
+    button.title = label
+    return
+  }
+  if (visual === 'error') {
+    button.classList.add('c-arcade-solution-submit--error')
+    button.innerHTML = verifyXIcon(14)
+    const label = detail || 'Verification failed'
+    button.setAttribute('aria-label', label)
+    button.title = label
+    return
+  }
+  button.classList.add('c-arcade-solution-submit--default')
+  button.innerHTML = verifyEnterIcon(14)
+  button.setAttribute('aria-label', 'Verify solve password')
+  button.title = 'Verify'
 }
 
 function puzzleEl(fill: string, notch: Notch): string {
@@ -86,6 +124,13 @@ function escapeHtml(value: string): string {
     .replace(/>/g, '&gt;')
 }
 
+function slugify(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
 function buildCardInner(
 	entry: { title: string; genre: string; author: string; thumbnail: string; gameUrl?: string | null },
 	index: number,
@@ -94,6 +139,7 @@ function buildCardInner(
         mode: 'demo'
         count: number
         demoTitle: string
+        exampleId?: string
       }
     | {
         mode: 'upvote'
@@ -102,6 +148,7 @@ function buildCardInner(
         disabled: boolean
         titleAttr: string
         puzzleId: string
+        exampleId?: string
       }
 ): string {
   const fill = ARCADE_PASTEL_COLORS[index % ARCADE_PASTEL_COLORS.length]
@@ -128,11 +175,28 @@ function buildCardInner(
             </button>`
 	}
 
+  const normalizedExampleId =
+    likeOpts.exampleId
+      ? likeOpts.exampleId.trim().toLowerCase()
+      : ''
+  const verificationMarkup = normalizedExampleId
+    ? `
+      <form class="c-arcade-solution-form c-arcade-solution-form--top" data-example-id="${escapeAttr(normalizedExampleId)}">
+        <input type="hidden" name="exampleId" value="${escapeAttr(normalizedExampleId)}" />
+        <div class="c-arcade-solution-controls">
+          <input id="arcade-solution-${index}" class="c-arcade-solution-input" type="text" autocomplete="off" placeholder="Solve password" aria-label="Solve password" required />
+          <button class="c-arcade-solution-submit c-arcade-solution-submit--default" type="submit" aria-label="Verify solve password" title="Verify">${verifyEnterIcon(14)}</button>
+        </div>
+      </form>
+    `
+    : ''
+
   return `
     <div class="c-arcade-stack" style="z-index:${50 - index}" data-card-index="${index}">
       <article class="c-arcade-piece c-arcade-piece-top">
         ${puzzleEl(fill, { top: 'flat', right: 'flat', bottom: 'tab', left: 'flat' })}
         <div class="c-arcade-piece-inner c-arcade-piece-inner-top">
+          ${verificationMarkup}
           <div class="c-arcade-thumb-wrap">
             ${thumbMarkup}
           </div>
@@ -154,10 +218,12 @@ function buildCardInner(
 }
 
 function buildDemoCard(entry: ExampleCard, index: number): string {
+  const exampleId = entry.exampleId || `demo-${slugify(entry.title)}-${index}`
   return buildCardInner(entry, index, {
     mode: 'demo',
     count: entry.likes,
     demoTitle: 'Demo placeholder — only registered puzzles accept upvotes, and you must be signed in.',
+    exampleId,
   })
 }
 
@@ -193,6 +259,7 @@ function buildRegisteredCard(entry: ArcadeApiPuzzle, index: number, auth: AuthMe
       disabled,
       titleAttr,
       puzzleId: entry.puzzleId,
+      exampleId: `registered-${entry.puzzleId}`,
     }
   )
 }
@@ -228,6 +295,17 @@ function buildArcadePage(auth: AuthMeResponse | null, apiPuzzles: ArcadeApiPuzzl
 }
 
 type UpvoteOkResponse = { success?: boolean; likeCount?: number; newUpvote?: boolean }
+type VerifySolutionResponse = {
+  success?: boolean
+  verified?: boolean
+  newCredit?: boolean
+  amount?: number
+  pieces?: number
+}
+type SolutionStatusResponse = {
+  success?: boolean
+  solvedByExampleId?: Record<string, boolean>
+}
 
 function setupLikes(root: HTMLElement): void {
   const upvoteStatus = root.querySelector<HTMLElement>('.c-arcade-upvote-status')
@@ -269,6 +347,106 @@ function setupLikes(root: HTMLElement): void {
       }
     })
   })
+}
+
+function setupDemoSolutionVerification(root: HTMLElement): void {
+  const forms = root.querySelectorAll<HTMLFormElement>('.c-arcade-solution-form')
+  const markSolved = (form: HTMLFormElement, input: HTMLInputElement, button: HTMLButtonElement, detail = 'Verified'): void => {
+    setSolutionSubmitVisual(button, 'success', detail)
+    form.classList.add('is-solved')
+    input.value = 'solved!'
+    input.disabled = true
+    input.readOnly = false
+    button.disabled = true
+  }
+
+  forms.forEach((form) => {
+    const input = form.querySelector<HTMLInputElement>('.c-arcade-solution-input')
+    const button = form.querySelector<HTMLButtonElement>('.c-arcade-solution-submit')
+    if (!input || !button) return
+
+    input.addEventListener('input', () => {
+      if (form.classList.contains('is-solved')) return
+      if (button.classList.contains('c-arcade-solution-submit--error')) {
+        setSolutionSubmitVisual(button, 'default')
+      }
+    })
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault()
+      if (form.classList.contains('is-solved')) return
+      const fromForm = new FormData(form).get('exampleId')
+      const exampleId = String(fromForm || form.getAttribute('data-example-id') || form.dataset.exampleId || '')
+        .trim()
+        .toLowerCase()
+      const entered = input.value.trim()
+      if (!exampleId) return
+      if (!entered) {
+        setSolutionSubmitVisual(button, 'error', 'Enter solve password')
+        return
+      }
+
+      input.disabled = true
+      button.disabled = true
+      setSolutionSubmitVisual(button, 'default')
+      try {
+        const payload = await fetchJson<ApiErrorResponse & VerifySolutionResponse>('/arcade/verify-solution', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ exampleId, password: entered }),
+        })
+        const newCredit = Boolean(payload.newCredit)
+        const amount = Number(payload.amount || 0)
+        const successDetail = newCredit ? `Verified. +${amount} pieces.` : 'Verified. Already credited.'
+        markSolved(form, input, button, successDetail)
+        const nextPieces = Number(payload.pieces)
+        const piecesValue = root.querySelector<HTMLElement>('.c-arcade-pieces-value')
+        if (piecesValue && Number.isFinite(nextPieces)) {
+          piecesValue.textContent = `🧩 ${nextPieces}`
+        }
+      } catch (error) {
+        const msg = error instanceof Error ? error.message : 'Verification failed'
+        setSolutionSubmitVisual(button, 'error', msg)
+        input.disabled = false
+        button.disabled = false
+      }
+    })
+  })
+
+  const items = Array.from(forms)
+    .map((form) => {
+      const input = form.querySelector<HTMLInputElement>('.c-arcade-solution-input')
+      const button = form.querySelector<HTMLButtonElement>('.c-arcade-solution-submit')
+      const fromDataset = String(form.getAttribute('data-example-id') || form.dataset.exampleId || '')
+        .trim()
+        .toLowerCase()
+      if (!input || !button || !fromDataset) return null
+      return { form, input, button, exampleId: fromDataset }
+    })
+    .filter((item): item is { form: HTMLFormElement; input: HTMLInputElement; button: HTMLButtonElement; exampleId: string } => Boolean(item))
+
+  const exampleIds = Array.from(new Set(items.map((item) => item.exampleId)))
+  if (!exampleIds.length) return
+
+  void (async () => {
+    try {
+      const payload = await fetchJson<ApiErrorResponse & SolutionStatusResponse>('/arcade/solution-status', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ exampleIds }),
+      })
+      const solvedByExampleId = payload.solvedByExampleId || {}
+      items.forEach(({ form, input, button, exampleId }) => {
+        if (solvedByExampleId[exampleId]) {
+          markSolved(form, input, button, 'Verified. Already solved.')
+        }
+      })
+    } catch {
+      // Ignore status hydrate errors and keep interactive fallback.
+    }
+  })()
 }
 
 function setStatusMessage(statusEl: HTMLElement, message: string, type: 'error' | 'success' | 'pending'): void {
@@ -379,6 +557,7 @@ function mountArcade(root: HTMLElement, auth: AuthMeResponse | null, apiPuzzles:
   setupLikes(root)
   setupPieceTestControls(root, auth)
   setupCreatorArcadeForm(root, auth)
+  setupDemoSolutionVerification(root)
 }
 
 async function fetchArcadePuzzles(): Promise<ArcadeApiPuzzle[]> {

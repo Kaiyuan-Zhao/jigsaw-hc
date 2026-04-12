@@ -5,6 +5,8 @@ export type ExampleCard = {
 	thumbnail: string
 	likes: number
 	gameUrl?: string
+	exampleId?: string
+	password?: string
 }
 
 export type ArcadeApiPuzzle = {

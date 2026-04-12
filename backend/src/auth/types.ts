@@ -36,11 +36,3 @@ export type SessionRecord = {
 	tokenExpiresAt: number
 	user: SessionUser
 }
-
-export type ClaimTokenPayload = {
-	sub: string
-	aud: string
-	jti: string
-	iat: number
-	exp: number
-}

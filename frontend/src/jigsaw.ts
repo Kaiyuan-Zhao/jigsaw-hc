@@ -189,42 +189,10 @@ function buildArcadeEngageHtml(): string {
           </div>
           <div class="c-creator-rewards-engage-item">
             <div class="c-creator-rewards-engage-icon" aria-hidden="true">${flagLarge}</div>
-            <p class="c-creator-rewards-engage-line">Solving 1 puzzle = +1 🧩</p>
+            <p class="c-creator-rewards-engage-line">Solving 1 puzzle = +2 🧩</p>
           </div>
         </div>
       </div>`;
-}
-
-function buildCreatorCardHtml(): string {
-  return `
-    <div class="c-creator-card" id="docs">
-      <div class="c-creator-body">
-        <div class="c-creator-text">
-          <h3 class="c-creator-title">Need help with solve redirection?</h3>
-          <p class="c-creator-desc">
-            Check out the <a href="#docs">documentation</a> with code examples
-            and step-by-step guides.
-          </p>
-        </div>
-      </div>
-      <div class="c-code-block">
-        <div class="c-code-dots">
-          <div class="c-code-dot c-code-dot-1"></div>
-          <div class="c-code-dot c-code-dot-2"></div>
-          <div class="c-code-dot c-code-dot-3"></div>
-        </div>
-        <div class="c-code-content">
-          <div><span class="c-code-comment">// Lightweight solve crediting snippet</span></div>
-          <div>
-            &lt;<span class="c-code-fn">script</span> <span class="c-code-prop">src</span>=<span class="c-code-str">"https://yourdomain.com/api/games/sdk.js"</span> <span class="c-code-prop">defer</span>&gt;&lt;/<span class="c-code-fn">script</span>&gt;
-          </div>
-          <div>
-            &lt;<span class="c-code-fn">button</span> <span class="c-code-prop">data-jigsaw-win</span> <span class="c-code-prop">data-puzzle-id</span>=<span class="c-code-str">"YOUR_ID"</span>&gt;win&lt;/<span class="c-code-fn">button</span>&gt;
-          </div>
-          <div><span class="c-code-comment">// works on third-party hosts via popup auth</span></div>
-        </div>
-      </div>
-    </div>`;
 }
 
 function buildPrinciples(): HTMLElement {
@@ -241,7 +209,6 @@ function buildPrinciples(): HTMLElement {
     </div>`).join('');
 
   const arcadeEngage = buildArcadeEngageHtml();
-  const creatorCard = buildCreatorCardHtml();
 
   return htmlToElement(`
 <section class="c-principles c-arcade-stage-section c-puzzle-border c-section-shell" data-ui-hook="arcade-stage-section">
@@ -282,8 +249,6 @@ function buildPrinciples(): HTMLElement {
       <div class="c-principles-arcade-divider" aria-hidden="true"></div>
       ${arcadeEngage}
       <a href="/arcade" class="c-main-cta c-arcade-cta">Enter the Arcade</a>
-      <div class="c-arcade-engage-divider" aria-hidden="true"></div>
-      ${creatorCard}
     </div>
 </section>`);
 }
@@ -418,7 +383,7 @@ const FAQS: FAQItem[] = [
   },
   {
     question: 'Does  ___  count as a "puzzle"?',
-    answer: 'Anything goes as long as it\'s interactive and has a clear and clever solution! Just make sure the solve code snippet is properly added.',
+    answer: 'Anything goes as long as it\'s interactive and has a clear and clever solution! On the Arcade, set a solve password on your card so players can verify completions and you get credit.',
     fill: PASTELS.pink,
     notch: { top: 'flat', right: 'flat', bottom: 'tab', left: 'tab' },
   },

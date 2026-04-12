@@ -1,7 +1,6 @@
 import express from 'express'
 import cookieParser from 'cookie-parser'
 import { registerHealthRoutes } from './routes/health.js'
-import { registerGameRoutes } from './routes/games.js'
 import { registerAuthRoutes } from './routes/auth.js'
 import { registerPieceRoutes } from './routes/pieces.js'
 import { registerArcadeRoutes } from './routes/arcade.js'
@@ -13,7 +12,6 @@ export function createApp(): express.Express {
 	app.use(cookieParser())
 
 	registerHealthRoutes(app)
-	registerGameRoutes(app)
 	registerAuthRoutes(app)
 	registerPieceRoutes(app)
 	registerArcadeRoutes(app)

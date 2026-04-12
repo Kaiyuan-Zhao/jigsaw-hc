@@ -1,6 +1,23 @@
 import type express from 'express'
 import { getSessionFromRequest } from '../auth/session.js'
-import { applyArcadeUpvote, listArcadePuzzles, registerOrUpdateArcadePuzzle } from '../piece-store.js'
+import { applyArcadeUpvote, claimPuzzleReward, getUserPieceBalance, hasPuzzleClaim, listArcadePuzzles, registerOrUpdateArcadePuzzle } from '../piece-store.js'
+
+const ARCADE_SOLUTION_CREDIT_PIECES = 2
+const DEFAULT_ARCADE_SOLUTION_PASSWORD = 'angel'
+const ARCADE_EXAMPLE_SOLUTIONS: Record<string, { password: string; rewardPuzzleId: string }> = {
+	'game-of-gods': {
+		password: 'angel',
+		rewardPuzzleId: 'arcade-solution:game-of-gods',
+	},
+}
+
+function resolveArcadeSolution(exampleId: string): { expectedPassword: string; rewardPuzzleId: string } {
+	const solution = ARCADE_EXAMPLE_SOLUTIONS[exampleId]
+	return {
+		expectedPassword: String(solution?.password || DEFAULT_ARCADE_SOLUTION_PASSWORD).trim().toLowerCase(),
+		rewardPuzzleId: String(solution?.rewardPuzzleId || `arcade-solution:${exampleId}`).slice(0, 200),
+	}
+}
 
 export function registerArcadeRoutes(app: express.Express): void {
 	app.get('/arcade/puzzles', async (req, res) => {
@@ -97,6 +114,97 @@ export function registerArcadeRoutes(app: express.Express): void {
 		} catch (error) {
 			console.error('[arcade] failed to upvote', error)
 			res.status(500).json({ error: 'Failed to upvote puzzle' })
+		}
+	})
+
+	app.post('/arcade/verify-solution', async (req, res) => {
+		try {
+			const sessionData = getSessionFromRequest(req)
+			if (!sessionData) {
+				res.status(401).json({ error: 'Sign in with Hack Club to claim solution credit' })
+				return
+			}
+
+			const body = (req.body || {}) as { exampleId?: string; password?: string }
+			const exampleId = String(body.exampleId || '').trim().toLowerCase()
+			const password = String(body.password || '').trim().toLowerCase()
+			if (!exampleId || !password) {
+				res.status(400).json({ error: 'exampleId and password are required' })
+				return
+			}
+
+			const { expectedPassword, rewardPuzzleId } = resolveArcadeSolution(exampleId)
+			if (password !== expectedPassword) {
+				res.status(400).json({ error: 'Incorrect solve password' })
+				return
+			}
+
+			const nextBalance = await claimPuzzleReward({
+				targetUserId: sessionData.session.user.id,
+				puzzleId: rewardPuzzleId,
+				amount: ARCADE_SOLUTION_CREDIT_PIECES,
+				reason: `Arcade solution verify:${exampleId}`,
+			})
+			if (nextBalance === null) {
+				const currentBalance = await getUserPieceBalance(sessionData.session.user.id)
+				res.json({
+					success: true,
+					verified: true,
+					newCredit: false,
+					amount: 0,
+					pieces: currentBalance,
+				})
+				return
+			}
+
+			res.json({
+				success: true,
+				verified: true,
+				newCredit: true,
+				amount: ARCADE_SOLUTION_CREDIT_PIECES,
+				pieces: nextBalance,
+			})
+		} catch (error) {
+			console.error('[arcade] failed to verify solution', error)
+			res.status(500).json({ error: 'Failed to verify solution' })
+		}
+	})
+
+	app.post('/arcade/solution-status', async (req, res) => {
+		try {
+			const sessionData = getSessionFromRequest(req)
+			const body = (req.body || {}) as { exampleIds?: unknown }
+			const rawExampleIds = Array.isArray(body.exampleIds) ? body.exampleIds : []
+			const exampleIds = rawExampleIds
+				.map((id) => String(id || '').trim().toLowerCase())
+				.filter(Boolean)
+				.slice(0, 100)
+
+			const solvedByExampleId: Record<string, boolean> = {}
+			for (const exampleId of exampleIds) {
+				solvedByExampleId[exampleId] = false
+			}
+
+			if (!sessionData || exampleIds.length === 0) {
+				res.json({ success: true, solvedByExampleId })
+				return
+			}
+
+			const checks = await Promise.all(
+				exampleIds.map(async (exampleId) => {
+					const { rewardPuzzleId } = resolveArcadeSolution(exampleId)
+					const solved = await hasPuzzleClaim(sessionData.session.user.id, rewardPuzzleId)
+					return { exampleId, solved }
+				})
+			)
+			for (const item of checks) {
+				solvedByExampleId[item.exampleId] = item.solved
+			}
+
+			res.json({ success: true, solvedByExampleId })
+		} catch (error) {
+			console.error('[arcade] failed to fetch solution status', error)
+			res.status(500).json({ error: 'Failed to fetch solution status' })
 		}
 	})
 }
