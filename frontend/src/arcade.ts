@@ -67,23 +67,6 @@ function puzzleEl(fill: string, notch: Notch): string {
   return puzzleSVG({ fill, ...notch })
 }
 
-function buildPiecePanel(user: AuthUser): string {
-  return `
-    <section class="c-arcade-pieces-panel">
-      <div class="c-arcade-pieces-head">
-        <h2 class="c-arcade-pieces-title">Arcade Pieces</h2>
-        <p class="c-arcade-pieces-user">${user.name || user.email || 'Signed in'}</p>
-      </div>
-      <div class="c-arcade-pieces-value">🧩 ${user.pieces || 0}</div>
-      <div class="c-arcade-piece-test-controls">
-        <button class="c-piece-test-btn" type="button" data-delta="1000">+1 piece</button>
-        <button class="c-piece-test-btn" type="button" data-delta="-10">-1 piece</button>
-      </div>
-      <p class="c-arcade-piece-test-status" aria-live="polite"></p>
-    </section>
-  `
-}
-
 function escapeAttr(value: string): string {
   return value
     .replace(/&/g, '&amp;')
@@ -220,18 +203,15 @@ function buildGalleryCards(auth: AuthMeResponse | null, byPuzzleId: Record<strin
 
 function buildArcadePage(auth: AuthMeResponse | null, byPuzzleId: Record<string, UpvoteState>): HTMLElement {
   const user = auth?.authenticated ? auth.user : undefined
-  const piecePanel = user ? buildPiecePanel(user) : ''
 
   return htmlToElement(`
 <section class="c-arcade-gallery-page">
   <div class="c-arcade-gallery-inner">
     <header class="c-arcade-gallery-head">
       <h1 class="c-arcade-gallery-title c-page-title">Arcade Gallery</h1>
-      <p class="c-arcade-gallery-subtitle c-page-chip">Puzzle cards are manually curated. Likes and solve rewards are tied to your signed-in Hack Club OpenID account.</p>
       <p class="c-arcade-upvote-status" aria-live="polite"></p>
       <a href="/" class="c-arcade-back-link">Back to Home</a>
     </header>
-    ${piecePanel}
     <div class="c-arcade-gallery-grid">
       ${buildGalleryCards(auth, byPuzzleId)}
     </div>
