@@ -443,7 +443,6 @@ function buildFAQ(): HTMLElement {
   <div class="c-faq-inner">
     <div class="c-section-header">
       <h2 class="c-section-title c-section-title">FAQ</h2>
-      <p class="c-section-subtitle">Quick answers to common questions</p>
     </div>
     <div class="c-faq-list">${items}</div>
   </div>
