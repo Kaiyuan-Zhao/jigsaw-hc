@@ -3,7 +3,7 @@ import type { EdgeType } from './puzzle-path'
 import { htmlToElement } from './lib/dom'
 import { puzzleSVG } from './ui/puzzle-svg'
 import { PASTEL_COLORS } from './lib/palette'
-import type { ApiErrorResponse, AuthMeResponse, AuthUser } from './types/auth'
+import type { ApiErrorResponse, AuthMeResponse } from './types/auth'
 import type { UserPuzzleCard } from './types/arcade'
 type Notch = { top: EdgeType; right: EdgeType; bottom: EdgeType; left: EdgeType }
 
@@ -202,8 +202,6 @@ function buildGalleryCards(auth: AuthMeResponse | null, byPuzzleId: Record<strin
 }
 
 function buildArcadePage(auth: AuthMeResponse | null, byPuzzleId: Record<string, UpvoteState>): HTMLElement {
-  const user = auth?.authenticated ? auth.user : undefined
-
   return htmlToElement(`
 <section class="c-arcade-gallery-page">
   <div class="c-arcade-gallery-inner">
