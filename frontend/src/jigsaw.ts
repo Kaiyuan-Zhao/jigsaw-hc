@@ -1,6 +1,8 @@
-import type { EdgeType } from './puzzle-path'
+import { buildPuzzlePath, gridPieceEdges, type EdgeType } from './puzzle-path'
 import { htmlToElement } from './lib/dom'
+import { SHOP_ITEMS } from './shop-display'
 import { puzzleSVG, type PuzzleSvgOptions } from './ui/puzzle-svg'
+import { PASTELS } from './lib/palette'
 
 // ============================================================
 // PUZZLES AND OTHER ICON STUFF
@@ -60,6 +62,19 @@ function icon(name: IconName, size = 24): string {
   return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="${isFill ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`;
 }
 
+const ARCADE_HEART_PATH =
+  '<path d="m12 20-1.1-1C6 14.7 3 12 3 8.5 3 5.4 5.4 3 8.5 3c1.7 0 3.4.8 4.5 2.1C14.1 3.8 15.8 3 17.5 3 20.6 3 23 5.4 23 8.5c0 3.5-3 6.2-7.9 10.5z"/>';
+
+function arcadeHeartSvg(size: number, filled: boolean): string {
+  return `<svg class="c-arcade-heart-svg" viewBox="0 0 24 24" width="${size}" height="${size}" fill="${filled ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${ARCADE_HEART_PATH}</svg>`;
+}
+
+const SOLVE_FLAG_PATH =
+  '<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/>';
+
+function solveFlagSvg(size: number): string {
+  return `<svg class="c-solve-flag-svg" viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${SOLVE_FLAG_PATH}</svg>`;
+}
 
 type Notch = { top: EdgeType; right: EdgeType; bottom: EdgeType; left: EdgeType };
 
@@ -75,28 +90,37 @@ function puzzleEl(fill: string, notch: Notch, stroke = '#111827', strokeWidth?: 
 
 function buildHero(): HTMLElement {
   return htmlToElement(`
-<section class="j-hero j-puzzle-border">
-  <div class="j-hero-floater j-hero-floater-1">
-    ${puzzleEl('#bae1ff', { top: 'flat', right: 'tab', bottom: 'tab', left: 'flat' }, 'transparent')}
+<section class="c-hero c-puzzle-border c-section-shell">
+  <div class="c-hero-floater c-hero-floater-1">
+    ${puzzleEl(PASTELS.blue, { top: 'flat', right: 'tab', bottom: 'tab', left: 'flat' }, 'transparent')}
   </div>
-  <div class="j-hero-floater j-hero-floater-2">
-    ${puzzleEl('#baffc9', { top: 'hole', right: 'flat', bottom: 'hole', left: 'tab' }, 'transparent')}
+  <div class="c-hero-floater c-hero-floater-2">
+    ${puzzleEl(PASTELS.green, { top: 'hole', right: 'flat', bottom: 'hole', left: 'tab' }, 'transparent')}
   </div>
-  <div class="j-hero-floater j-hero-floater-3">
-    ${puzzleEl('#ffb3ba', { top: 'tab', right: 'flat', bottom: 'flat', left: 'hole' }, 'transparent')}
+  <div class="c-hero-floater c-hero-floater-3">
+    ${puzzleEl(PASTELS.pink, { top: 'tab', right: 'flat', bottom: 'flat', left: 'hole' }, 'transparent')}
   </div>
-  <div class="j-hero-floater j-hero-floater-4">
-    ${puzzleEl('#ffffba', { top: 'flat', right: 'tab', bottom: 'hole', left: 'flat' }, 'transparent')}
+  <div class="c-hero-floater c-hero-floater-4">
+    ${puzzleEl(PASTELS.yellow, { top: 'flat', right: 'tab', bottom: 'hole', left: 'flat' }, 'transparent')}
+  </div>
+  <div class="c-hero-floater c-hero-floater-5">
+    ${puzzleEl('#ffdfba', { top: 'hole', right: 'tab', bottom: 'tab', left: 'flat' }, 'transparent')}
+  </div>
+  <div class="c-hero-floater c-hero-floater-6">
+    ${puzzleEl(PASTELS.blue, { top: 'tab', right: 'flat', bottom: 'hole', left: 'hole' }, 'transparent')}
+  </div>
+  <div class="c-hero-floater c-hero-floater-7" aria-hidden="true">
+    ${puzzleSVG({ fill: '#FAC898', stroke: '', top: 'tab', right: 'tab', bottom: 'tab', left: 'tab', cls: '' })}
   </div>
 
-  <div class="j-hero-content">
-    <div class="j-hero-title-wrap">
-      <h1 class="j-hero-title">Jigsaw</h1>
-      <div class="j-hero-spinner">
+  <div class="c-hero-content">
+    <div class="c-hero-title-wrap">
+      <h1 class="c-hero-title">Jigsaw</h1>
+      <div class="c-hero-spinner">
         ${puzzleSVG({ fill: '#ffdfba', stroke: '', top: 'tab', right: 'tab', bottom: 'tab', left: 'tab', cls: '' })}
       </div>
     </div>
-    <p class="j-hero-subtitle">Ship puzzles, solve puzzles, win puzzles!</p>
+    <p class="c-hero-subtitle">Ship puzzles, solve puzzles, win puzzles!</p>
   </div>
 </section>`);
 }
@@ -121,7 +145,7 @@ const PRINCIPLES: Principle[] = [
     icon: 'brain',
     title: 'Clever',
     desc: 'frustratingly stumped becomes elegantly simple.',
-    fill: '#baffc9',
+    fill: PASTELS.green,
     notch: { top: 'flat', right: 'tab', bottom: 'hole', left: 'flat' },
     startX: -420, startY: -200, startRot: -45,
   },
@@ -129,7 +153,7 @@ const PRINCIPLES: Principle[] = [
     icon: 'trophy',
     title: 'Open & Solvable',
     desc: 'Open sourced and hosted live! Credits solves (see #docs)',
-    fill: '#ffb3ba',
+    fill: PASTELS.pink,
     notch: { top: 'flat', right: 'flat', bottom: 'tab', left: 'hole' },
     startX: 420, startY: -160, startRot: 30,
   },
@@ -137,7 +161,7 @@ const PRINCIPLES: Principle[] = [
     icon: 'mousePointer',
     title: 'Interactive',
     desc: 'Not just text riddles!',
-    fill: '#bae1ff',
+    fill: PASTELS.blue,
     notch: { top: 'tab', right: 'tab', bottom: 'flat', left: 'flat' },
     startX: -360, startY: 310, startRot: 60,
   },
@@ -145,50 +169,121 @@ const PRINCIPLES: Principle[] = [
     icon: 'star',
     title: 'Fun!',
     desc: 'Most important!',
-    fill: '#ffffba',
+    fill: PASTELS.yellow,
     notch: { top: 'hole', right: 'flat', bottom: 'flat', left: 'hole' },
     startX: 320, startY: 260, startRot: -20,
   },
 ];
 
+function buildArcadeEngageHtml(): string {
+  const heartLarge = arcadeHeartSvg(52, false);
+  const heartInline = arcadeHeartSvg(20, false);
+  const flagLarge = solveFlagSvg(52);
+  return `
+      <div class="c-creator-rewards-engage">
+        <p class="c-creator-rewards-engage-title">Engage with the Arcade!</p>
+        <div class="c-creator-rewards-engage-grid">
+          <div class="c-creator-rewards-engage-item">
+            <div class="c-creator-rewards-engage-icon" aria-hidden="true">${heartLarge}</div>
+            <p class="c-creator-rewards-engage-line">Receiving 1 ${heartInline} = +2 🧩</p>
+          </div>
+          <div class="c-creator-rewards-engage-item">
+            <div class="c-creator-rewards-engage-icon" aria-hidden="true">${flagLarge}</div>
+            <p class="c-creator-rewards-engage-line">Solving 1 puzzle = +1 🧩</p>
+          </div>
+        </div>
+      </div>`;
+}
+
+function buildCreatorCardHtml(): string {
+  return `
+    <div class="c-creator-card" id="docs">
+      <div class="c-creator-body">
+        <div class="c-creator-text">
+          <h3 class="c-creator-title">Need help with solve redirection?</h3>
+          <p class="c-creator-desc">
+            Check out the <a href="#docs">documentation</a> with code examples
+            and step-by-step guides.
+          </p>
+        </div>
+      </div>
+      <div class="c-code-block">
+        <div class="c-code-dots">
+          <div class="c-code-dot c-code-dot-1"></div>
+          <div class="c-code-dot c-code-dot-2"></div>
+          <div class="c-code-dot c-code-dot-3"></div>
+        </div>
+        <div class="c-code-content">
+          <div><span class="c-code-comment">// Lightweight solve crediting snippet</span></div>
+          <div>
+            &lt;<span class="c-code-fn">script</span> <span class="c-code-prop">src</span>=<span class="c-code-str">"https://yourdomain.com/api/games/sdk.js"</span> <span class="c-code-prop">defer</span>&gt;&lt;/<span class="c-code-fn">script</span>&gt;
+          </div>
+          <div>
+            &lt;<span class="c-code-fn">button</span> <span class="c-code-prop">data-jigsaw-win</span> <span class="c-code-prop">data-puzzle-id</span>=<span class="c-code-str">"YOUR_ID"</span>&gt;win&lt;/<span class="c-code-fn">button</span>&gt;
+          </div>
+          <div><span class="c-code-comment">// works on third-party hosts via popup auth</span></div>
+        </div>
+      </div>
+    </div>`;
+}
+
 function buildPrinciples(): HTMLElement {
   const cards = PRINCIPLES.map((p, i) => `
-    <div class="j-arcade-scroll-piece principle-slot-${i}" style="z-index: ${4 - i}">
-      <div class="j-principle-card">
+    <div class="c-arcade-scroll-piece principle-slot-${i}" data-ui-hook="arcade-scroll-piece">
+      <div class="c-principle-card">
         ${puzzleEl(p.fill, p.notch)}
-        <div class="j-principle-body">
-          <div class="j-icon-wrap">${icon(p.icon, 48)}</div>
-          <h3 class="j-principle-name">${p.title}</h3>
-          <p class="j-principle-desc">${p.desc}</p>
+        <div class="c-principle-body">
+          <div class="c-icon-wrap">${icon(p.icon, 36)}</div>
+          <h3 class="c-principle-name">${p.title}</h3>
+          <p class="c-principle-desc">${p.desc}</p>
         </div>
       </div>
     </div>`).join('');
 
+  const arcadeEngage = buildArcadeEngageHtml();
+  const creatorCard = buildCreatorCardHtml();
+
   return htmlToElement(`
-<section class="j-principles j-arcade-stage-section j-puzzle-border">
-  <div class="j-dot-bg"></div>
-  <div class="j-principles-decor">
+<section class="c-principles c-arcade-stage-section c-puzzle-border c-section-shell" data-ui-hook="arcade-stage-section">
+  <div class="c-dot-bg"></div>
+  <div class="c-principles-decor">
     ${puzzleEl('#FAC898', { top: 'tab', right: 'tab', bottom: 'tab', left: 'tab' }, 'transparent')}
   </div>
-  <div class="j-principles-floater j-principles-floater-1">
+  <div class="c-principles-floater c-principles-floater-1">
     ${puzzleEl('#ffdfba', { top: 'hole', right: 'tab', bottom: 'flat', left: 'flat' }, 'transparent')}
   </div>
-  <div class="j-principles-floater j-principles-floater-2">
-    ${puzzleEl('#baffc9', { top: 'flat', right: 'flat', bottom: 'tab', left: 'hole' }, 'transparent')}
+  <div class="c-principles-floater c-principles-floater-2">
+    ${puzzleEl(PASTELS.green, { top: 'flat', right: 'flat', bottom: 'tab', left: 'hole' }, 'transparent')}
   </div>
-  <div class="j-principles-inner">
-    <div class="j-section-header">
-      <h2 class="j-section-title">
-        GUIDE: Building Your Puzzle!
+  <div class="c-principles-floater c-principles-floater-3">
+    ${puzzleEl(PASTELS.pink, { top: 'tab', right: 'hole', bottom: 'flat', left: 'flat' }, 'transparent')}
+  </div>
+  <div class="c-principles-floater c-principles-floater-4">
+    ${puzzleEl(PASTELS.blue, { top: 'flat', right: 'tab', bottom: 'hole', left: 'tab' }, 'transparent')}
+  </div>
+  <div class="c-principles-floater c-principles-floater-5">
+    ${puzzleEl(PASTELS.yellow, { top: 'hole', right: 'flat', bottom: 'tab', left: 'tab' }, 'transparent')}
+  </div>
+  <div class="c-principles-floater c-principles-floater-6" aria-hidden="true">
+    ${puzzleSVG({ fill: '#ffdfba', stroke: '', top: 'tab', right: 'tab', bottom: 'tab', left: 'tab', cls: '' })}
+  </div>
+  <div class="c-principles-inner">
+    <div class="c-section-header">
+      <h2 class="c-section-title">
+        Puzzling 101
       </h2>
     </div>
     
-    <div class="j-principles-grid j-arcade-stage">
+    <div class="c-principles-grid c-arcade-stage">
       ${cards}
     </div>
-      <h2 class="j-arcade-title">Check out the Arcade</h2>
-      <p class="j-arcade-subtitle">Where all these pieces come together</p>
-      <a href="/arcade" class="j-arcade-cta">Enter the Arcade</a>
+      <h2 class="c-section-title c-section-title-lg c-section-title-shadow-blue c-arcade-title">... Then be featured on the Arcade</h2>
+      <p class="c-section-subtitle c-section-subtitle-chip c-arcade-subtitle" data-ui-hook="arcade-stage-hint">Where all these pieces come together</p>
+      <div class="c-principles-arcade-divider" aria-hidden="true"></div>
+      ${arcadeEngage}
+      <a href="/arcade" class="c-main-cta c-arcade-cta">Enter the Arcade</a>
+      <div class="c-arcade-engage-divider" aria-hidden="true"></div>
+      ${creatorCard}
     </div>
 </section>`);
 }
@@ -199,43 +294,102 @@ function buildPrinciples(): HTMLElement {
 // ============================================================
 
 function buildCreator(): HTMLElement {
+  const prizeCards = buildCreatorPrizeCards()
+  const rewards = buildCreatorRewards()
   return htmlToElement(`
-<section id="docs" class="j-creator j-puzzle-border">
-    <div class="j-creator-floater j-creator-floater-1">
-      ${puzzleEl('#bae1ff', { top: 'tab', right: 'hole', bottom: 'flat', left: 'flat' }, 'transparent')}
+<section class="c-creator c-puzzle-border c-section-shell">
+    <div class="c-creator-floater c-creator-floater-1">
+      ${puzzleEl(PASTELS.blue, { top: 'tab', right: 'hole', bottom: 'flat', left: 'flat' }, 'transparent')}
     </div>
-    <div class="j-creator-floater j-creator-floater-2">
-      ${puzzleEl('#ffb3ba', { top: 'flat', right: 'tab', bottom: 'tab', left: 'flat' }, 'transparent')}
+    <div class="c-creator-floater c-creator-floater-2">
+      ${puzzleEl(PASTELS.pink, { top: 'flat', right: 'tab', bottom: 'tab', left: 'flat' }, 'transparent')}
     </div>
-    <div class="j-creator-card">
-      <div class="j-creator-body">
-        <div class="j-creator-text">
-          <h3 class="j-creator-title">Need help with solve redirection?</h3>
-          <p class="j-creator-desc">
-            Check out the <a href="#docs">documentation</a> with code examples
-            and step-by-step guides.
-          </p>
-        </div>
+    <div class="c-creator-floater c-creator-floater-3">
+      ${puzzleEl(PASTELS.yellow, { top: 'tab', right: 'flat', bottom: 'flat', left: 'hole' }, 'transparent')}
+    </div>
+    <div class="c-creator-floater c-creator-floater-4">
+      ${puzzleEl(PASTELS.green, { top: 'hole', right: 'tab', bottom: 'hole', left: 'flat' }, 'transparent')}
+    </div>
+    <div class="c-creator-floater c-creator-floater-5" aria-hidden="true">
+      ${puzzleSVG({ fill: '#ffdfba', stroke: '', top: 'tab', right: 'tab', bottom: 'tab', left: 'tab', cls: '' })}
+    </div>
+    ${rewards}
+    <div class="c-creator-conveyor" aria-label="Shop prizes preview">
+      <div class="c-creator-conveyor-track">
+        <div class="c-creator-conveyor-set">${prizeCards}</div>
+        <div class="c-creator-conveyor-set" aria-hidden="true">${prizeCards}</div>
       </div>
-      <div class="j-code-block">
-        <div class="j-code-dots">
-          <div class="j-code-dot" style="background:#ffb3ba"></div>
-          <div class="j-code-dot" style="background:#ffffba"></div>
-          <div class="j-code-dot" style="background:#baffc9"></div>
-        </div>
-        <div class="j-code-content">
-          <div><span class="j-code-comment">// Lightweight solve crediting snippet</span></div>
-          <div>
-            &lt;<span class="j-code-fn">script</span> <span class="j-code-prop">src</span>=<span class="j-code-str">"https://yourdomain.com/api/games/sdk.js"</span> <span class="j-code-prop">defer</span>&gt;&lt;/<span class="j-code-fn">script</span>&gt;
-          </div>
-          <div>
-            &lt;<span class="j-code-fn">button</span> <span class="j-code-prop">data-jigsaw-win</span> <span class="j-code-prop">data-puzzle-id</span>=<span class="j-code-str">"YOUR_ID"</span>&gt;win&lt;/<span class="j-code-fn">button</span>&gt;
-          </div>
-          <div><span class="j-code-comment">// works on third-party hosts via popup auth</span></div>
-        </div>
-      </div>
-  </div>
+    </div>
+    <div class="c-creator-shop-link-wrap">
+      <a href="/shop" class="c-main-cta c-creator-shop-link">Go to Shop</a>
+    </div>
 </section>`);
+}
+
+function buildCreatorRewards(): string {
+  const smallRewardOverlay = buildRewardTileOverlay(6, 2)
+  const largeRewardOverlay = buildRewardTileOverlay(7, 6)
+
+  return `
+    <div class="c-creator-rewards" aria-label="Puzzle piece rewards">
+      <p class="c-creator-rewards-title">Earn 🧩 pieces for your puzzle!</p>
+      <p class="c-creator-rewards-tagline">building bigger and better puzzles = earn more pieces!</p>
+      <div class="c-creator-rewards-grid">
+        <article
+          class="c-creator-reward-card c-creator-reward-card-small"
+        >
+          <div class="c-creator-reward-overlay" aria-hidden="true">${smallRewardOverlay}</div>
+          <div class="c-creator-reward-content">
+            <p class="c-creator-reward-pieces">120 puzzles</p>
+            <p class="c-creator-reward-time">= ~1-2h</p>
+          </div>
+        </article>
+        <article
+          class="c-creator-reward-card c-creator-reward-card-large"
+        >
+          <div class="c-creator-reward-overlay" aria-hidden="true">${largeRewardOverlay}</div>
+          <div class="c-creator-reward-content">
+            <p class="c-creator-reward-pieces">420 puzzles</p>
+            <p class="c-creator-reward-time">= ~3-4h</p>
+          </div>
+        </article>
+      </div>
+    </div>
+  `
+}
+
+function buildRewardTileOverlay(cols: number, rows: number): string {
+  const tile = 100
+  const tiles: string[] = []
+
+  for (let row = 0; row < rows; row += 1) {
+    for (let col = 0; col < cols; col += 1) {
+      const edges = gridPieceEdges(row, col, rows, cols)
+      const path = buildPuzzlePath(edges.top, edges.right, edges.bottom, edges.left, tile / 2)
+      tiles.push(
+        `<path d="${path}" transform="translate(${col * tile} ${row * tile})" fill="none" stroke="#9ca3af" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>`
+      )
+    }
+  }
+
+  return `
+<svg class="c-creator-reward-overlay-svg" viewBox="0 0 ${cols * tile} ${rows * tile}" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+  ${tiles.join('')}
+</svg>`.trim()
+}
+
+function buildCreatorPrizeCards(): string {
+  return SHOP_ITEMS.map((item) => `
+      <article class="c-creator-prize-card">
+        <div class="c-creator-prize-visual">
+          <img class="c-creator-prize-img" src="${item.image}" alt="${item.title}" loading="lazy" decoding="async" />
+        </div>
+        <div class="c-creator-prize-body">
+          <p class="c-creator-prize-title">${item.title}</p>
+          <p class="c-creator-prize-price"><span aria-hidden="true">🧩</span> ${item.pricePieces}</p>
+        </div>
+      </article>
+    `).join('')
 }
 
 // ============================================================
@@ -253,25 +407,25 @@ const FAQS: FAQItem[] = [
   {
     question: 'Am I eligible to participate?',
     answer: 'Anyone 18 or younger can!',
-    fill: '#bae1ff',
+    fill: PASTELS.blue,
     notch: { top: 'hole', right: 'tab', bottom: 'hole', left: 'flat' },
   },
   {
     question: 'Do I host my own puzzle?',
     answer: 'Yes! You host your puzzle on your own domain or platform (like GitHub Pages, Vercel, etc.). The Arcade just links to your live puzzle.',
-    fill: '#baffc9',
+    fill: PASTELS.green,
     notch: { top: 'tab', right: 'tab', bottom: 'flat', left: 'flat' },
   },
   {
     question: 'Does  ___  count as a "puzzle"?',
     answer: 'Anything goes as long as it\'s interactive and has a clear and clever solution! Just make sure the solve code snippet is properly added.',
-    fill: '#ffb3ba',
+    fill: PASTELS.pink,
     notch: { top: 'flat', right: 'flat', bottom: 'tab', left: 'tab' },
   },
   {
     question: 'How do Arcade Pieces and prizes work?',
     answer: 'Most pieces are awarded for project completion, and some for receiving community engagement (upvotes or solves). Solving others\' puzzles in the arcade after your submission also earns you pieces! Pieces can be redeemed for fun rewards like puzzles, swag, and much more!',
-    fill: '#ffffba',
+    fill: PASTELS.yellow,
     notch: { top: 'hole', right: 'flat', bottom: 'flat', left: 'tab' },
   },
   {
@@ -284,38 +438,47 @@ const FAQS: FAQItem[] = [
 
 function buildFAQ(): HTMLElement {
   const items = FAQS.map((f, i) => `
-    <div class="j-faq-item" data-faq="${i}">
-      <button class="j-faq-btn" aria-expanded="false">
-        <div class="j-faq-btn-left">
-          <div class="j-faq-piece-icon">
+    <div class="c-faq-item" data-faq="${i}" data-ui-hook="faq-item">
+      <button class="c-faq-btn" data-ui-hook="faq-button" aria-expanded="false">
+        <div class="c-faq-btn-left">
+          <div class="c-faq-piece-icon">
             ${puzzleEl(f.fill, f.notch, '#111827', 2)}
-            <span class="j-faq-piece-icon-label">?</span>
+            <span class="c-faq-piece-icon-label">?</span>
           </div>
-          <h3 class="j-faq-question">${f.question}</h3>
+          <h3 class="c-faq-question">${f.question}</h3>
         </div>
       </button>
-      <div class="j-faq-answer" role="region">
-        <div class="j-faq-answer-inner">${f.answer}</div>
+      <div class="c-faq-answer" role="region">
+        <div class="c-faq-answer-inner">${f.answer}</div>
       </div>
     </div>`).join('');
 
   return htmlToElement(`
-<section class="j-faq">
-  <div class="j-faq-decor">
-    ${puzzleEl('#bae1ff', { top: 'flat', right: 'tab', bottom: 'flat', left: 'tab' }, 'transparent')}
+<section class="c-faq c-section-shell">
+  <div class="c-faq-decor">
+    ${puzzleEl(PASTELS.blue, { top: 'flat', right: 'tab', bottom: 'flat', left: 'tab' }, 'transparent')}
   </div>
-  <div class="j-faq-floater j-faq-floater-1">
-    ${puzzleEl('#ffffba', { top: 'tab', right: 'flat', bottom: 'hole', left: 'flat' }, 'transparent')}
+  <div class="c-faq-floater c-faq-floater-1">
+    ${puzzleEl(PASTELS.yellow, { top: 'tab', right: 'flat', bottom: 'hole', left: 'flat' }, 'transparent')}
   </div>
-  <div class="j-faq-floater j-faq-floater-2">
+  <div class="c-faq-floater c-faq-floater-2">
     ${puzzleEl('#ffdfba', { top: 'flat', right: 'hole', bottom: 'flat', left: 'tab' }, 'transparent')}
   </div>
-  <div class="j-faq-inner">
-    <div class="j-section-header">
-      <h2 class="j-section-title" style="filter:drop-shadow(4px 4px 0 #baffc9)">FAQ</h2>
-      <p class="j-section-subtitle">Quick answers to common questions</p>
+  <div class="c-faq-floater c-faq-floater-3">
+    ${puzzleEl(PASTELS.green, { top: 'tab', right: 'tab', bottom: 'flat', left: 'flat' }, 'transparent')}
+  </div>
+  <div class="c-faq-floater c-faq-floater-4">
+    ${puzzleEl(PASTELS.pink, { top: 'flat', right: 'flat', bottom: 'tab', left: 'tab' }, 'transparent')}
+  </div>
+  <div class="c-faq-floater c-faq-floater-5" aria-hidden="true">
+    ${puzzleSVG({ fill: PASTELS.blue, stroke: '', top: 'tab', right: 'tab', bottom: 'tab', left: 'tab', cls: '' })}
+  </div>
+  <div class="c-faq-inner">
+    <div class="c-section-header">
+      <h2 class="c-section-title c-section-title">FAQ</h2>
+      <p class="c-section-subtitle">Quick answers to common questions</p>
     </div>
-    <div class="j-faq-list">${items}</div>
+    <div class="c-faq-list">${items}</div>
   </div>
 </section>`);
 }
@@ -325,17 +488,17 @@ function buildFAQ(): HTMLElement {
 // ============================================================
 
 function setupFAQ(): void {
-  const items = document.querySelectorAll<HTMLElement>('.j-faq-item');
+  const items = document.querySelectorAll<HTMLElement>('[data-ui-hook="faq-item"], .c-faq-item');
 
   items.forEach((item) => {
-    const btn = item.querySelector<HTMLButtonElement>('.j-faq-btn')!;
+    const btn = item.querySelector<HTMLButtonElement>('[data-ui-hook="faq-button"], .c-faq-btn')!;
     btn.addEventListener('click', () => {
       const isOpen = item.classList.contains('is-open');
 
       // Close all
       items.forEach((i) => {
         i.classList.remove('is-open');
-        i.querySelector('.j-faq-btn')?.setAttribute('aria-expanded', 'false');
+        i.querySelector('[data-ui-hook="faq-button"], .c-faq-btn')?.setAttribute('aria-expanded', 'false');
       });
 
       // Toggle clicked
@@ -356,9 +519,9 @@ function lerp(a: number, b: number, t: number): number {
 }
 
 function setupArcade(): void {
-  const section  = document.querySelector<HTMLElement>('.j-arcade-stage-section');
-  const pieceEls = Array.from(document.querySelectorAll<HTMLElement>('.j-arcade-scroll-piece'));
-  const hint     = document.querySelector<HTMLElement>('.j-section-subtitle');
+  const section  = document.querySelector<HTMLElement>('[data-ui-hook="arcade-stage-section"], .c-arcade-stage-section');
+  const pieceEls = Array.from(document.querySelectorAll<HTMLElement>('[data-ui-hook="arcade-scroll-piece"], .c-arcade-scroll-piece'));
+  const hint     = document.querySelector<HTMLElement>('[data-ui-hook="arcade-stage-hint"], .c-arcade-subtitle');
 
   if (!section || !pieceEls.length) return;
 
@@ -373,7 +536,9 @@ function setupArcade(): void {
   function update(): void {
     const rect    = section!.getBoundingClientRect();
     const viewH   = window.innerHeight;
-    const rawProg = (viewH / 2 - rect.top) / (rect.height / 2);
+    const scrollPivot = viewH * 0.85;
+    const travelDistance = rect.height * 0.32;
+    const rawProg = (scrollPivot - rect.top) / travelDistance;
     const prog    = Math.max(0, Math.min(1, rawProg));
 
     pieceEls.forEach((el, i) => {
@@ -399,8 +564,8 @@ export function initJigsaw(root: HTMLElement): void {
   root.innerHTML = '';
 
   root.appendChild(buildHero());
-  root.appendChild(buildPrinciples());
   root.appendChild(buildCreator());
+  root.appendChild(buildPrinciples());
   root.appendChild(buildFAQ());
 
   // Wait a tick for DOM to settle before setting up observers

@@ -1,0 +1,13 @@
+.c-section-shell {
+  display: block;
+}
+
+@media (max-width: 900px) {
+  .c-site-header-inner {
+    gap: 12px;
+  }
+
+  .c-site-nav {
+    display: none;
+  }
+}

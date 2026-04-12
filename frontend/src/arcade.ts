@@ -2,15 +2,16 @@ import { fetchJson } from './lib/api'
 import type { EdgeType } from './puzzle-path'
 import { htmlToElement } from './lib/dom'
 import { puzzleSVG } from './ui/puzzle-svg'
+import { PASTEL_COLORS } from './lib/palette'
 import type { ApiErrorResponse, AuthMeResponse, AuthUser } from './types/auth'
 import type { ArcadeApiPuzzle, ExampleCard } from './types/arcade'
 type Notch = { top: EdgeType; right: EdgeType; bottom: EdgeType; left: EdgeType }
 
-const ARCADE_PASTEL_COLORS = ['#bae1ff', '#ffb3ba', '#baffc9', '#ffffba'] as const
+const ARCADE_PASTEL_COLORS = PASTEL_COLORS
 const HERO_THUMB = new URL('./assets/vite.svg', import.meta.url).href
 
 const EXAMPLES: ExampleCard[] = [
-  { title: 'Color Cipher', author: 'by @maya_codes', genre: 'Browser puzzle game', thumbnail: HERO_THUMB, likes: 24, gameUrl: 'http://localhost:3000/' },
+  { title: 'Game of Gods', author: 'by Ken Zhao', genre: 'LLM Logic Puzzle', thumbnail: new URL('./assets/arcade_thumbnails/angel.jpg', import.meta.url).href, likes: 24, gameUrl: 'https://game-of-gods.vercel.app/' },
   { title: 'Hidden Vault', author: 'by @ctf_master', genre: 'CTF-style challenge', thumbnail: HERO_THUMB, likes: 31 },
   { title: 'Ghost Protocol', author: 'by @arg_enthusiast', genre: 'ARG-inspired site', thumbnail: HERO_THUMB, likes: 19 },
   { title: 'Neural Maze', author: 'by @ai_puzzler', genre: 'AI puzzle', thumbnail: HERO_THUMB, likes: 42 },
@@ -33,39 +34,39 @@ function puzzleEl(fill: string, notch: Notch): string {
 
 function buildPiecePanel(user: AuthUser): string {
   return `
-    <section class="j-arcade-pieces-panel">
-      <div class="j-arcade-pieces-head">
-        <h2 class="j-arcade-pieces-title">Arcade Pieces</h2>
-        <p class="j-arcade-pieces-user">${user.name || user.email || 'Signed in'}</p>
+    <section class="c-arcade-pieces-panel">
+      <div class="c-arcade-pieces-head">
+        <h2 class="c-arcade-pieces-title">Arcade Pieces</h2>
+        <p class="c-arcade-pieces-user">${user.name || user.email || 'Signed in'}</p>
       </div>
-      <div class="j-arcade-pieces-value">🧩 ${user.pieces || 0}</div>
-      <div class="j-arcade-piece-test-controls">
-        <button class="j-piece-test-btn" type="button" data-delta="1000">+1 piece</button>
-        <button class="j-piece-test-btn" type="button" data-delta="-10">-1 piece</button>
+      <div class="c-arcade-pieces-value">🧩 ${user.pieces || 0}</div>
+      <div class="c-arcade-piece-test-controls">
+        <button class="c-piece-test-btn" type="button" data-delta="1000">+1 piece</button>
+        <button class="c-piece-test-btn" type="button" data-delta="-10">-1 piece</button>
       </div>
-      <p class="j-arcade-piece-test-status" aria-live="polite"></p>
+      <p class="c-arcade-piece-test-status" aria-live="polite"></p>
     </section>
   `
 }
 
 function buildCreatorPuzzlePanel(): string {
   return `
-    <section class="j-arcade-creator-panel">
-      <h2 class="j-arcade-creator-title">List your puzzle in the arcade</h2>
-      <p class="j-arcade-creator-hint">Use the same <code class="j-arcade-code">puzzleId</code> as in your game’s reward button. Upvotes count only from signed-in Hack Club accounts; each unique upvote adds 2 pieces to your balance.</p>
-      <form class="j-creator-arcade-form">
-        <label class="j-arcade-form-label" for="arcade-self-puzzle-id">Puzzle ID</label>
-        <input id="arcade-self-puzzle-id" name="puzzleId" class="j-arcade-form-input" type="text" required autocomplete="off" />
-        <label class="j-arcade-form-label" for="arcade-self-title">Title</label>
-        <input id="arcade-self-title" name="title" class="j-arcade-form-input" type="text" required />
-        <label class="j-arcade-form-label" for="arcade-self-genre">Genre (optional)</label>
-        <input id="arcade-self-genre" name="genre" class="j-arcade-form-input" type="text" />
-        <label class="j-arcade-form-label" for="arcade-self-thumb">Thumbnail URL (optional)</label>
-        <input id="arcade-self-thumb" name="thumbnail" class="j-arcade-form-input" type="url" />
-        <label class="j-arcade-form-label" for="arcade-self-game-url">Game URL (optional)</label>
-        <input id="arcade-self-game-url" name="gameUrl" class="j-arcade-form-input" type="url" />
-        <button class="j-arcade-form-submit" type="submit">Save to arcade</button>
-        <p class="j-creator-arcade-status" aria-live="polite"></p>
+    <section class="c-arcade-creator-panel">
+      <h2 class="c-arcade-creator-title">List your puzzle in the arcade</h2>
+      <p class="c-arcade-creator-hint">Use the same <code class="c-arcade-code">puzzleId</code> as in your game’s reward button. Upvotes count only from signed-in Hack Club accounts; each unique upvote adds 2 pieces to your balance.</p>
+      <form class="c-creator-arcade-form">
+        <label class="c-arcade-form-label" for="arcade-self-puzzle-id">Puzzle ID</label>
+        <input id="arcade-self-puzzle-id" name="puzzleId" class="c-arcade-form-input" type="text" required autocomplete="off" />
+        <label class="c-arcade-form-label" for="arcade-self-title">Title</label>
+        <input id="arcade-self-title" name="title" class="c-arcade-form-input" type="text" required />
+        <label class="c-arcade-form-label" for="arcade-self-genre">Genre (optional)</label>
+        <input id="arcade-self-genre" name="genre" class="c-arcade-form-input" type="text" />
+        <label class="c-arcade-form-label" for="arcade-self-thumb">Thumbnail URL (optional)</label>
+        <input id="arcade-self-thumb" name="thumbnail" class="c-arcade-form-input" type="url" />
+        <label class="c-arcade-form-label" for="arcade-self-game-url">Game URL (optional)</label>
+        <input id="arcade-self-game-url" name="gameUrl" class="c-arcade-form-input" type="url" />
+        <button class="c-arcade-form-submit" type="submit">Save to arcade</button>
+        <p class="c-creator-arcade-status" aria-live="polite"></p>
       </form>
     </section>
   `
@@ -107,43 +108,43 @@ function buildCardInner(
   const safeUrl = entry.gameUrl?.trim()
   const safeTitle = escapeHtml(entry.title)
   const thumbMarkup = safeUrl
-    ? `<a class="j-arcade-thumb-link" href="${escapeAttr(safeUrl)}" target="_self" rel="noopener noreferrer"><img class="j-arcade-thumb" src="${escapeAttr(entry.thumbnail)}" alt="${escapeAttr(entry.title)} thumbnail" /></a>`
-    : `<img class="j-arcade-thumb" src="${escapeAttr(entry.thumbnail)}" alt="${escapeAttr(entry.title)} thumbnail" />`
+    ? `<a class="c-arcade-thumb-link" href="${escapeAttr(safeUrl)}" target="_self" rel="noopener noreferrer"><img class="c-arcade-thumb" src="${escapeAttr(entry.thumbnail)}" alt="${escapeAttr(entry.title)} thumbnail" /></a>`
+    : `<img class="c-arcade-thumb" src="${escapeAttr(entry.thumbnail)}" alt="${escapeAttr(entry.title)} thumbnail" />`
 
 	let likeBlock: string
 	if (likeOpts.mode === 'demo') {
-		likeBlock = `<span class="j-like-demo-pill" role="text" title="${escapeAttr(likeOpts.demoTitle)}">
-              <span class="j-like-icon">${icon(15, false)}</span>
-              <span class="j-like-count">${likeOpts.count}</span>
+		likeBlock = `<span class="c-like-demo-pill" role="text" title="${escapeAttr(likeOpts.demoTitle)}">
+              <span class="c-like-icon">${icon(15, false)}</span>
+              <span class="c-like-count">${likeOpts.count}</span>
             </span>`
 	} else {
 		const likedClass = likeOpts.liked ? ' is-liked' : ''
 		const likedStr = likeOpts.liked ? 'true' : 'false'
 		const pressedStr = likeOpts.liked ? 'true' : 'false'
 		const disabledAttr = likeOpts.disabled ? ' disabled' : ''
-		likeBlock = `<button class="j-like-btn${likedClass}" type="button" data-upvote-api="1" data-puzzle-id="${escapeAttr(likeOpts.puzzleId)}" data-liked="${likedStr}" data-base-count="${likeOpts.count}" aria-pressed="${pressedStr}" aria-label="${escapeAttr(likeOpts.titleAttr)}" title="${escapeAttr(likeOpts.titleAttr)}"${disabledAttr}>
-              <span class="j-like-icon">${icon(15, likeOpts.liked)}</span>
-              <span class="j-like-count">${likeOpts.count}</span>
+		likeBlock = `<button class="c-like-btn${likedClass}" type="button" data-upvote-api="1" data-puzzle-id="${escapeAttr(likeOpts.puzzleId)}" data-liked="${likedStr}" data-base-count="${likeOpts.count}" aria-pressed="${pressedStr}" aria-label="${escapeAttr(likeOpts.titleAttr)}" title="${escapeAttr(likeOpts.titleAttr)}"${disabledAttr}>
+              <span class="c-like-icon">${icon(15, likeOpts.liked)}</span>
+              <span class="c-like-count">${likeOpts.count}</span>
             </button>`
 	}
 
   return `
-    <div class="j-arcade-stack" style="z-index:${50 - index}" data-card-index="${index}">
-      <article class="j-arcade-piece j-arcade-piece-top">
+    <div class="c-arcade-stack" style="z-index:${50 - index}" data-card-index="${index}">
+      <article class="c-arcade-piece c-arcade-piece-top">
         ${puzzleEl(fill, { top: 'flat', right: 'flat', bottom: 'tab', left: 'flat' })}
-        <div class="j-arcade-piece-inner j-arcade-piece-inner-top">
-          <div class="j-arcade-thumb-wrap">
+        <div class="c-arcade-piece-inner c-arcade-piece-inner-top">
+          <div class="c-arcade-thumb-wrap">
             ${thumbMarkup}
           </div>
         </div>
       </article>
-      <article class="j-arcade-piece j-arcade-piece-bottom">
+      <article class="c-arcade-piece c-arcade-piece-bottom">
         ${puzzleEl(fill, { top: 'hole', right: 'flat', bottom: 'flat', left: 'flat' })}
-        <div class="j-arcade-piece-inner j-arcade-piece-inner-bottom">
-          <h2 class="j-arcade-card-title">${safeTitle}</h2>
-          <p class="j-arcade-card-desc">${escapeHtml(entry.genre)}</p>
-          <div class="j-arcade-card-footer">
-            <span class="j-arcade-card-author">${escapeHtml(entry.author)}</span>
+        <div class="c-arcade-piece-inner c-arcade-piece-inner-bottom">
+          <h2 class="c-arcade-card-title">${safeTitle}</h2>
+          <p class="c-arcade-card-desc">${escapeHtml(entry.genre)}</p>
+          <div class="c-arcade-card-footer">
+            <span class="c-arcade-card-author">${escapeHtml(entry.author)}</span>
             ${likeBlock}
           </div>
         </div>
@@ -208,17 +209,17 @@ function buildArcadePage(auth: AuthMeResponse | null, apiPuzzles: ArcadeApiPuzzl
   const creatorFormPanel = user ? buildCreatorPuzzlePanel() : ''
 
   return htmlToElement(`
-<section class="j-arcade-gallery-page">
-  <div class="j-arcade-gallery-inner">
-    <header class="j-arcade-gallery-head">
-      <h1 class="j-arcade-gallery-title">Arcade Gallery</h1>
-      <p class="j-arcade-gallery-subtitle">Registered puzzles award their creator 2 puzzle pieces per unique upvote. Upvoting requires a signed-in Hack Club account.</p>
-      <p class="j-arcade-upvote-status" aria-live="polite"></p>
-      <a href="/" class="j-arcade-back-link">Back to Home</a>
+<section class="c-arcade-gallery-page">
+  <div class="c-arcade-gallery-inner">
+    <header class="c-arcade-gallery-head">
+      <h1 class="c-arcade-gallery-title c-page-title">Arcade Gallery</h1>
+      <p class="c-arcade-gallery-subtitle c-page-chip">Registered puzzles award their creator 2 puzzle pieces per unique upvote. Upvoting requires a signed-in Hack Club account.</p>
+      <p class="c-arcade-upvote-status" aria-live="polite"></p>
+      <a href="/" class="c-arcade-back-link">Back to Home</a>
     </header>
     ${piecePanel}
     ${creatorFormPanel}
-    <div class="j-arcade-gallery-grid">
+    <div class="c-arcade-gallery-grid">
       ${buildGalleryCards(apiPuzzles, auth)}
     </div>
   </div>
@@ -229,8 +230,8 @@ function buildArcadePage(auth: AuthMeResponse | null, apiPuzzles: ArcadeApiPuzzl
 type UpvoteOkResponse = { success?: boolean; likeCount?: number; newUpvote?: boolean }
 
 function setupLikes(root: HTMLElement): void {
-  const upvoteStatus = root.querySelector<HTMLElement>('.j-arcade-upvote-status')
-  const buttons = root.querySelectorAll<HTMLButtonElement>('.j-like-btn[data-upvote-api="1"]')
+  const upvoteStatus = root.querySelector<HTMLElement>('.c-arcade-upvote-status')
+  const buttons = root.querySelectorAll<HTMLButtonElement>('.c-like-btn[data-upvote-api="1"]')
   buttons.forEach((button) => {
     button.addEventListener('click', async () => {
       if (button.disabled) return
@@ -250,8 +251,8 @@ function setupLikes(root: HTMLElement): void {
           body: JSON.stringify({ puzzleId }),
         })
         const likeCount = Number(payload.likeCount ?? button.dataset.baseCount ?? '0')
-        const countEl = button.querySelector<HTMLElement>('.j-like-count')
-        const iconWrap = button.querySelector<HTMLElement>('.j-like-icon')
+        const countEl = button.querySelector<HTMLElement>('.c-like-count')
+        const iconWrap = button.querySelector<HTMLElement>('.c-like-icon')
         button.dataset.baseCount = String(likeCount)
         button.dataset.liked = 'true'
         button.setAttribute('aria-pressed', 'true')
@@ -285,8 +286,8 @@ async function refreshArcadeGallery(root: HTMLElement): Promise<void> {
 function setupCreatorArcadeForm(root: HTMLElement, auth: AuthMeResponse | null): void {
   if (!auth?.authenticated) return
 
-  const form = root.querySelector<HTMLFormElement>('.j-creator-arcade-form')
-  const status = root.querySelector<HTMLElement>('.j-creator-arcade-status')
+  const form = root.querySelector<HTMLFormElement>('.c-creator-arcade-form')
+  const status = root.querySelector<HTMLElement>('.c-creator-arcade-status')
   if (!form || !status) return
 
   form.addEventListener('submit', async (event) => {
@@ -303,7 +304,7 @@ function setupCreatorArcadeForm(root: HTMLElement, auth: AuthMeResponse | null):
       return
     }
 
-    const submitButton = form.querySelector<HTMLButtonElement>('.j-arcade-form-submit')
+    const submitButton = form.querySelector<HTMLButtonElement>('.c-arcade-form-submit')
     if (submitButton) submitButton.disabled = true
     setStatusMessage(status, 'Saving…', 'pending')
 
@@ -335,9 +336,9 @@ function setupCreatorArcadeForm(root: HTMLElement, auth: AuthMeResponse | null):
 function setupPieceTestControls(root: HTMLElement, auth: AuthMeResponse | null): void {
   if (!auth?.authenticated || !auth.user) return
 
-  const buttons = root.querySelectorAll<HTMLButtonElement>('.j-piece-test-btn')
-  const status = root.querySelector<HTMLElement>('.j-arcade-piece-test-status')
-  const piecesValue = root.querySelector<HTMLElement>('.j-arcade-pieces-value')
+  const buttons = root.querySelectorAll<HTMLButtonElement>('.c-piece-test-btn')
+  const status = root.querySelector<HTMLElement>('.c-arcade-piece-test-status')
+  const piecesValue = root.querySelector<HTMLElement>('.c-arcade-pieces-value')
   if (!buttons.length || !status || !piecesValue) return
 
   buttons.forEach((button) => {

@@ -1,6 +1,6 @@
 import crypto from 'node:crypto'
 import type express from 'express'
-import { CLAIM_TOKEN_TTL_SECONDS, FRONTEND_URL, GAME_ALLOWED_ORIGINS, REWARD_AMOUNT } from '../config.js'
+import { CLAIM_TOKEN_TTL_SECONDS, FRONTEND_URL, REWARD_AMOUNT } from '../config.js'
 import { signClaimToken, verifyClaimToken, hasUsedClaimToken, markClaimTokenUsed } from '../auth/claim-token.js'
 import type { ClaimTokenPayload } from '../auth/types.js'
 import { getSessionFromRequest } from '../auth/session.js'
@@ -31,8 +31,8 @@ export function registerGameRoutes(app: express.Express): void {
 
 	app.get('/games/claim-popup', (req, res) => {
 		const origin = String(req.query.origin || '').trim()
-		if (!origin || !GAME_ALLOWED_ORIGINS.includes(origin)) {
-			res.status(403).send('Origin not allowed')
+		if (!origin) {
+			res.status(400).send('origin is required')
 			return
 		}
 
@@ -68,10 +68,6 @@ export function registerGameRoutes(app: express.Express): void {
 		const normalizedOrigin = String(origin || '').trim()
 		if (!normalizedOrigin) {
 			res.status(400).json({ error: 'origin is required' })
-			return
-		}
-		if (!GAME_ALLOWED_ORIGINS.includes(normalizedOrigin)) {
-			res.status(403).json({ error: 'Origin not allowed' })
 			return
 		}
 

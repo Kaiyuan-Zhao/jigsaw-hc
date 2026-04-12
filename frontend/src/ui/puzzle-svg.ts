@@ -21,7 +21,7 @@ export function puzzleSVG(opts: PuzzleSvgOptions = {}): string {
 		right = 'tab',
 		bottom = 'tab',
 		left = 'tab',
-		cls = 'j-puzzle-svg',
+		cls = 'c-puzzle-svg',
 		mid = 50,
 	} = opts
 

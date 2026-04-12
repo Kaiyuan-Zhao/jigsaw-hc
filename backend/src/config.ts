@@ -9,10 +9,6 @@ const SESSION_SECRET = process.env.SESSION_SECRET || 'dev-secret-change-me'
 const IS_PROD = process.env.NODE_ENV === 'production'
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000
 const REWARD_AMOUNT = 10
-const GAME_ALLOWED_ORIGINS = (process.env.GAME_ALLOWED_ORIGINS || 'http://localhost:3000')
-	.split(',')
-	.map((value) => value.trim())
-	.filter(Boolean)
 const CLAIM_TOKEN_SECRET = process.env.CLAIM_TOKEN_SECRET || SESSION_SECRET
 const CLAIM_TOKEN_TTL_SECONDS = Math.max(30, Number(process.env.CLAIM_TOKEN_TTL_SECONDS || 180))
 const SUPABASE_URL = process.env.SUPABASE_URL || ''
@@ -24,7 +20,6 @@ export {
 	CLIENT_ID,
 	CLIENT_SECRET,
 	FRONTEND_URL,
-	GAME_ALLOWED_ORIGINS,
 	HCAUTH_URL,
 	IS_PROD,
 	PORT,

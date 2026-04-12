@@ -5,37 +5,36 @@ import type { AuthMeResponse } from './types/auth'
 
 export function buildSiteHeader(): HTMLElement {
 	const header = htmlToElement<HTMLElement>(`
-		<header class="j-site-header">
-			<div class="j-site-header-inner">
-				<a class="j-site-logo" href="/">Jigsaw</a>
-				<nav class="j-site-nav" aria-label="Primary">
-					<a class="j-site-nav-link" href="/">Home</a>
-					<a class="j-site-nav-link" href="/arcade">Arcade</a>
-					<a class="j-site-nav-link" href="/shop">Shop</a>
-					<a class="j-site-nav-link" href="/docs/solve-crediting">Docs</a>
+		<header class="c-site-header">
+			<div class="c-site-header-inner">
+				<a class="c-site-logo" href="/">Jigsaw</a>
+				<nav class="c-site-nav" aria-label="Primary">
+					<a class="c-site-nav-link" href="/">Home</a>
+					<a class="c-site-nav-link" href="/arcade">Arcade</a>
+					<a class="c-site-nav-link" href="/shop">Shop</a>
 				</nav>
-				<div class="j-site-auth"></div>
+				<div class="c-site-auth"></div>
 			</div>
 		</header>
 	`)
 
-	const authSlot = header.querySelector<HTMLElement>('.j-site-auth')
+	const authSlot = header.querySelector<HTMLElement>('.c-site-auth')
 	if (!authSlot) return header
 
 	const setSignedOut = (): void => {
-		authSlot.innerHTML = `<a class="j-site-signup" href="${API_BASE_URL}/auth/login">Sign up</a>`
+		authSlot.innerHTML = `<a class="c-site-signup" href="${API_BASE_URL}/auth/login">Sign up</a>`
 	}
 
 	const setSignedIn = (name: string, pieces = 0): void => {
 		authSlot.innerHTML = `
-			<div class="j-site-user-wrap">
-				<span class="j-site-piece-pill">🧩 ${pieces}</span>
-				<span class="j-site-user">${name}</span>
-				<button class="j-site-logout" type="button">Logout</button>
+			<div class="c-site-user-wrap">
+				<span class="c-site-piece-pill" data-ui-hook="piece-pill">🧩 ${pieces}</span>
+				<span class="c-site-user">${name}</span>
+				<button class="c-site-logout" type="button">Logout</button>
 			</div>
 		`
 
-		const logoutButton = authSlot.querySelector<HTMLButtonElement>('.j-site-logout')
+		const logoutButton = authSlot.querySelector<HTMLButtonElement>('.c-site-logout')
 		if (!logoutButton) return
 
 		logoutButton.addEventListener('click', async () => {

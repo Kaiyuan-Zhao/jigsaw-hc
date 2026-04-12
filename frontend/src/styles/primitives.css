@@ -1,0 +1,62 @@
+:is(.c-page-title, .c-section-title) {
+  color: var(--c-ink);
+}
+
+.c-page-title {
+  margin: 0;
+  font-size: var(--c-text-page-title);
+  text-transform: uppercase;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+
+.c-page-subtitle {
+  margin: 8px 0 0;
+  font-size: var(--c-text-body-sm);
+  line-height: 1.5;
+  color: var(--c-muted);
+}
+
+.c-page-chip {
+  width: fit-content;
+  margin: 10px auto 16px;
+  padding: 8px 14px;
+  border: 2px solid rgba(17, 24, 39, 0.24);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--c-ink-soft);
+  font-size: var(--c-text-body-sm);
+  font-weight: var(--c-weight-extrabold);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+}
+
+.c-text-display {
+  font-size: var(--c-text-display);
+  font-weight: var(--c-weight-black);
+  color: var(--c-ink);
+}
+
+.c-text-title {
+  font-size: var(--c-text-title);
+  font-weight: var(--c-weight-black);
+  color: var(--c-ink);
+}
+
+.c-text-body {
+  font-size: var(--c-text-base);
+  font-weight: var(--c-weight-medium);
+  color: var(--c-ink-soft);
+}
+
+.c-text-body-sm {
+  font-size: var(--c-text-body-sm);
+  font-weight: var(--c-weight-semibold);
+  color: var(--c-muted);
+}
+
+.c-text-caption {
+  font-size: var(--c-text-xs);
+  font-weight: var(--c-weight-semibold);
+  color: var(--c-muted-soft);
+}

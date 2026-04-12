@@ -1,8 +1,10 @@
 export function buildGamesSdk(frontendUrl: string): string {
 	return `(function () {
 	const scriptEl = document.currentScript
-	const apiOrigin = scriptEl && scriptEl.src ? new URL(scriptEl.src).origin : window.location.origin
-	const API_BASE_URL = apiOrigin
+	const scriptUrl = scriptEl && scriptEl.src ? new URL(scriptEl.src) : new URL(window.location.href)
+	const scriptPath = scriptUrl.pathname || ''
+	const basePath = scriptPath.endsWith('/games/sdk.js') ? scriptPath.slice(0, -('/games/sdk.js'.length)) : ''
+	const API_BASE_URL = scriptUrl.origin + basePath
 	const DEFAULT_REDIRECT_URL = '${frontendUrl}/arcade'
 	const DEFAULT_SELECTOR = '[data-jigsaw-win]'
 	const POPUP_TIMEOUT_MS = 90_000

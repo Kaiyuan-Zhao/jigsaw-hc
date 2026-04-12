@@ -50,3 +50,31 @@ export function buildPuzzlePath(
 
 	return segs.join(' ')
 }
+
+type InterlockEdge = Exclude<EdgeType, 'flat'>
+
+function opposite(edge: InterlockEdge): InterlockEdge {
+	return edge === 'tab' ? 'hole' : 'tab'
+}
+
+function rightSeam(row: number, col: number): InterlockEdge {
+	return (row + col) % 2 === 0 ? 'tab' : 'hole'
+}
+
+function bottomSeam(row: number, col: number): InterlockEdge {
+	return (row * 3 + col) % 2 === 0 ? 'hole' : 'tab'
+}
+
+export function gridPieceEdges(
+	row: number,
+	col: number,
+	rows: number,
+	cols: number
+): { top: EdgeType; right: EdgeType; bottom: EdgeType; left: EdgeType } {
+	const top: EdgeType = row === 0 ? 'flat' : opposite(bottomSeam(row - 1, col))
+	const left: EdgeType = col === 0 ? 'flat' : opposite(rightSeam(row, col - 1))
+	const right: EdgeType = col === cols - 1 ? 'flat' : rightSeam(row, col)
+	const bottom: EdgeType = row === rows - 1 ? 'flat' : bottomSeam(row, col)
+
+	return { top, right, bottom, left }
+}

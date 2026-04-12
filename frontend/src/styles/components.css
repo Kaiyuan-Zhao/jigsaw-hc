@@ -1,0 +1,11 @@
+:is(.c-site-nav-link, .c-site-signup, .c-site-logout, .c-docs-page-link, .c-piece-test-btn, .c-arcade-back-link) {
+  border-radius: var(--c-radius-pill);
+}
+
+:is(.c-site-nav-link, .c-site-signup, .c-site-logout, .c-docs-nav-link, .c-docs-page-link, .c-piece-test-btn, .c-arcade-form-submit, .c-arcade-back-link, .c-shop-purchase-btn, .c-main-cta) {
+  transition: all var(--c-transition-fast);
+}
+
+:is(.c-site-nav-link:hover, .c-site-signup:hover, .c-site-logout:hover, .c-piece-test-btn:hover, .c-arcade-form-submit:hover, .c-arcade-back-link:hover) {
+  border-style: dashed;
+}
