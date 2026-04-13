@@ -391,7 +391,7 @@ const FAQS: FAQItem[] = [
   },
   {
     question: 'How do I start?',
-    answer: 'Play some puzzles for some inspiration! Check out <a href="#docs">Arcade</a> to try others\' puzzles!',
+    answer: 'Play some puzzles for some inspiration! Check out <a href="/arcade">Arcade</a> to try others\' puzzles!',
     fill: '#ffdfba',
     notch: { top: 'tab', right: 'flat', bottom: 'tab', left: 'flat' },
   },

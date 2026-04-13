@@ -263,10 +263,10 @@ h1, h2, h3, h4 {
 }
 
 .c-hero-decor-2 {
-  bottom: 40px;
+  bottom: 70px;
   right: 40px;
-  width: 256px;
-  height: 256px;
+  width: 226px;
+  height: 226px;
   animation: jigsaw-float2 7s ease-in-out 1s infinite;
 }
 
@@ -275,6 +275,7 @@ h1, h2, h3, h4 {
   right: 16%;
   width: 120px;
   height: 120px;
+  opacity: 0.3;
   animation: jigsaw-float1 6s ease-in-out 0.4s infinite;
 }
 
@@ -843,6 +844,7 @@ h1, h2, h3, h4 {
   left: 5%;
   width: 102px;
   height: 102px;
+  opacity: 0.2;
   animation: jigsaw-spin 20s linear infinite;
 }
 
@@ -1481,7 +1483,7 @@ h1, h2, h3, h4 {
   right: 10%;
   width: 164px;
   height: 164px;
-  opacity: 0.3;
+  opacity: 0.6;
   animation: jigsaw-spin 20s linear infinite;
 }
 
