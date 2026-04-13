@@ -1023,6 +1023,11 @@ h1, h2, h3, h4 {
     gap: 24px;
     max-width: 640px;
   }
+
+  .c-creator-rewards-engage-grid .c-creator-rewards-engage-item:last-child {
+    grid-column: 1 / -1;
+    justify-self: center;
+  }
 }
 
 .c-creator-rewards-engage-item {

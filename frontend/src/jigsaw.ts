@@ -172,6 +172,7 @@ function buildArcadeEngageHtml(): string {
   const heartLarge = arcadeHeartSvg(52, false);
   const heartInline = arcadeHeartSvg(20, false);
   const flagLarge = solveFlagSvg(52);
+  const starLarge = icon('star', 52);
   return `
       <div class="c-creator-rewards-engage">
         <p class="c-creator-rewards-engage-title">Engage with the Arcade!</p>
@@ -183,6 +184,10 @@ function buildArcadeEngageHtml(): string {
           <div class="c-creator-rewards-engage-item">
             <div class="c-creator-rewards-engage-icon" aria-hidden="true">${flagLarge}</div>
             <p class="c-creator-rewards-engage-line">Solving 1 puzzle = +2 🧩</p>
+          </div>
+          <div class="c-creator-rewards-engage-item">
+            <div class="c-creator-rewards-engage-icon" aria-hidden="true">${starLarge}</div>
+            <p class="c-creator-rewards-engage-line">Your puzzle solved = +1🧩</p>
           </div>
         </div>
       </div>`;
