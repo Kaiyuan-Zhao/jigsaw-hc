@@ -3,11 +3,15 @@ import { fetchJson } from './lib/api'
 import { htmlToElement } from './lib/dom'
 import type { AuthMeResponse } from './types/auth'
 
+const JIGSAW_LOGO = new URL('./assets/jigsaw_logo.png', import.meta.url).href
+
 export function buildSiteHeader(): HTMLElement {
 	const header = htmlToElement<HTMLElement>(`
 		<header class="c-site-header">
 			<div class="c-site-header-inner">
-				<a class="c-site-logo" href="/">Jigsaw</a>
+				<a class="c-site-logo" href="/" aria-label="Jigsaw home">
+					<img class="c-site-logo-img" src="${JIGSAW_LOGO}" alt="Jigsaw" />
+				</a>
 				<nav class="c-site-nav" aria-label="Primary">
 					<a class="c-site-nav-link c-site-nav-link--home" href="/">Home</a>
 					<a class="c-site-nav-link c-site-nav-link--arcade" href="/arcade">Arcade</a>

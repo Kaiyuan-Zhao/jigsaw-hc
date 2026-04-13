@@ -4,6 +4,8 @@ import { SHOP_ITEMS } from './shop-display'
 import { puzzleSVG, type PuzzleSvgOptions } from './ui/puzzle-svg'
 import { PASTELS } from './lib/palette'
 
+const JIGSAW_LOGO = new URL('./assets/jigsaw_logo.png', import.meta.url).href
+
 // ============================================================
 // PUZZLES AND OTHER ICON STUFF
 // ============================================================
@@ -97,9 +99,6 @@ function buildHero(): HTMLElement {
   <div class="c-hero-decor c-hero-decor-2">
     ${puzzleEl(PASTELS.green, { top: 'hole', right: 'flat', bottom: 'hole', left: 'tab' }, 'transparent')}
   </div>
-   <div class="c-hero-decor c-hero-decor-3">
-    ${puzzleEl(PASTELS.pink, { top: 'tab', right: 'flat', bottom: 'flat', left: 'hole' }, 'transparent')}
-  </div>
   <div class="c-hero-decor c-hero-decor-5">
     ${puzzleEl('#ffdfba', { top: 'hole', right: 'tab', bottom: 'tab', left: 'flat' }, 'transparent')}
   </div>
@@ -109,7 +108,7 @@ function buildHero(): HTMLElement {
 
   <div class="c-hero-content">
     <div class="c-hero-title-wrap">
-      <h1 class="c-hero-title">Jigsaw</h1>
+      <h1 class="c-hero-title"><img class="c-hero-logo" src="${JIGSAW_LOGO}" alt="Jigsaw" /></h1>
       <div class="c-hero-decor c-hero-decor-title">
         ${puzzleSVG({ fill: '#FAC898', stroke: '', top: 'tab', right: 'tab', bottom: 'tab', left: 'tab', cls: '' })}
       </div>
