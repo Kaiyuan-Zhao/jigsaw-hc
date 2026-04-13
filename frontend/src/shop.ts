@@ -389,7 +389,7 @@ function buildShopCard(
 			const result = await postPurchase(item.id)
 			setPiecePill(result.balance)
 			await onPurchaseSuccess(refs, result.balance)
-			setCardStatus(statusEl, 'Ordered!', 'success')
+			setCardStatus(statusEl, 'Ordered! You will be contacted soon.', 'success')
 		} catch (err) {
 			if (err instanceof Error && err.message === 'Redirecting to sign in') {
 				setCardStatus(statusEl, '', 'idle')

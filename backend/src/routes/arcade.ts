@@ -3,7 +3,8 @@ import { getSessionFromRequest } from '../auth/session.js'
 import { applyArcadeUpvote, claimPuzzleReward, getArcadeSolutionRecord, getUserPieceBalance, grantPieces, hasPuzzleClaim, listArcadePuzzleUpvotes } from '../piece-store.js'
 
 const ARCADE_SOLUTION_CREDIT_PIECES = 2
-const ARCADE_UPVOTE_CREDIT_PIECES = 2
+const ARCADE_PUZZLE_OWNER_SOLVE_PIECES = 1
+const ARCADE_UPVOTE_CREDIT_PIECES = 4
 
 export function registerArcadeRoutes(app: express.Express): void {
 	app.post('/arcade/upvote-status', async (req, res) => {
@@ -103,6 +104,10 @@ export function registerArcadeRoutes(app: express.Express): void {
 				res.status(400).json({ error: 'Incorrect solve password' })
 				return
 			}
+			if (solution.creatorUserId && solution.creatorUserId === sessionData.session.user.id) {
+				res.status(400).json({ error: 'Cannot claim solve credit for your own puzzle' })
+				return
+			}
 
 			const nextBalance = await claimPuzzleReward({
 				targetUserId: sessionData.session.user.id,
@@ -110,6 +115,14 @@ export function registerArcadeRoutes(app: express.Express): void {
 				amount: ARCADE_SOLUTION_CREDIT_PIECES,
 				reason: `Arcade solution verify:${puzzleId}`,
 			})
+			if (solution.creatorUserId) {
+				await claimPuzzleReward({
+					targetUserId: solution.creatorUserId,
+					puzzleId: `arcade-owner-solve:${puzzleId}:solver=${sessionData.session.user.id}`,
+					amount: ARCADE_PUZZLE_OWNER_SOLVE_PIECES,
+					reason: `Arcade puzzle solved:${puzzleId}:solver=${sessionData.session.user.id}`,
+				})
+			}
 			if (nextBalance === null) {
 				const currentBalance = await getUserPieceBalance(sessionData.session.user.id)
 				res.json({

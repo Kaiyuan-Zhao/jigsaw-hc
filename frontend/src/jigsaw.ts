@@ -179,7 +179,7 @@ function buildArcadeEngageHtml(): string {
         <div class="c-creator-rewards-engage-grid">
           <div class="c-creator-rewards-engage-item">
             <div class="c-creator-rewards-engage-icon" aria-hidden="true">${heartLarge}</div>
-            <p class="c-creator-rewards-engage-line">Receiving 1 ${heartInline} = +2 🧩</p>
+            <p class="c-creator-rewards-engage-line">Receiving 1 ${heartInline} = +4 🧩</p>
           </div>
           <div class="c-creator-rewards-engage-item">
             <div class="c-creator-rewards-engage-icon" aria-hidden="true">${flagLarge}</div>

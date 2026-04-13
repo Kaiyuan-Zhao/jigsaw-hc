@@ -15,10 +15,10 @@ const ICON_PIECE_PLATFORMER = new URL('./assets/arcade_thumbnails/piece-platform
 
 const USER_PUZZLES: UserPuzzleCard[] = [
   // Set creatorUserId to the Hack Club OpenID user ID to pre-disable self-like.
-  { puzzleId: 'game-of-gods', title: 'Game of Gods', author: 'by Ken Zhao', genre: 'LLM Logic Puzzle', thumbnail: ICON_GAME_OF_GODS, baseLikes: 0, gameUrl: 'https://game-of-gods.vercel.app/' },
-  { puzzleId: 'hidden-vault', title: 'Hidden Vault', author: 'by @ctf_master', genre: 'CTF-style challenge', thumbnail: ICON_HIDDEN_VAULT, baseLikes: 2 },
-  { puzzleId: 'ghost-protocol', title: 'Ghost Protocol', author: 'by @arg_enthusiast', genre: 'ARG site', thumbnail: ICON_GHOST_PROTOCOL, baseLikes: 16 },
-  { puzzleId: 'piece-platformer', title: 'Piece Platformer', author: 'by @retro_kid', genre: 'Retro puzzle game', thumbnail: ICON_PIECE_PLATFORMER, baseLikes: 5 },
+  { puzzleId: 'game-of-gods', title: 'Game of Gods', author: 'by Kaiyuan Zhao', genre: 'LLM Logic Puzzle', thumbnail: ICON_GAME_OF_GODS, baseLikes: 0, gameUrl: 'https://game-of-gods.vercel.app/' },
+  { puzzleId: 'hidden-vault', title: 'Hidden Vault (dummy)', author: 'by Ken Zhao', genre: 'CTF-style challenge', thumbnail: ICON_HIDDEN_VAULT, baseLikes: 2 },
+  { puzzleId: 'ghost-protocol', title: 'Ghost Protocol (dummy)', author: 'by @arg_enthusiast', genre: 'ARG site', thumbnail: ICON_GHOST_PROTOCOL, baseLikes: 16 },
+  { puzzleId: 'piece-platformer', title: 'Piece Platformer (dummy)', author: 'by @retro_kid', genre: 'Retro puzzle game', thumbnail: ICON_PIECE_PLATFORMER, baseLikes: 5 },
 ]
 
 const HEART_ICON_PATH =
@@ -252,6 +252,11 @@ type SolutionStatusResponse = {
   solvedByPuzzleId?: Record<string, boolean>
 }
 
+function setHeaderPiecePill(balance: number): void {
+  const pill = document.querySelector<HTMLElement>('[data-ui-hook="piece-pill"], .c-site-piece-pill')
+  if (pill) pill.textContent = `🧩 ${balance}`
+}
+
 function setupLikes(root: HTMLElement): void {
   const upvoteStatus = root.querySelector<HTMLElement>('.c-arcade-upvote-status')
   const buttons = root.querySelectorAll<HTMLButtonElement>('.c-like-btn[data-upvote-api="1"]')
@@ -359,6 +364,9 @@ function setupSolutionVerification(root: HTMLElement): void {
         const successDetail = newCredit ? `Verified. +${amount} pieces.` : 'Verified. Already credited.'
         markSolved(form, input, button, successDetail)
         const nextPieces = Number(payload.pieces)
+        if (Number.isFinite(nextPieces)) {
+          setHeaderPiecePill(nextPieces)
+        }
         const piecesValue = root.querySelector<HTMLElement>('.c-arcade-pieces-value')
         if (piecesValue && Number.isFinite(nextPieces)) {
           piecesValue.textContent = `🧩 ${nextPieces}`
@@ -441,6 +449,7 @@ function setupPieceTestControls(root: HTMLElement, auth: AuthMeResponse | null):
         })
 
         const nextPieces = Number(payload.pieces || 0)
+        setHeaderPiecePill(nextPieces)
         piecesValue.textContent = `🧩 ${nextPieces}`
         setStatusMessage(status, `Pieces updated. New balance: ${nextPieces}.`, 'success')
       } catch (error) {
