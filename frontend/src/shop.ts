@@ -400,24 +400,36 @@ function buildShopCard(
 export function initShop(root: HTMLElement): void {
 	const page = htmlToElement(`
 		<div class="c-shop-page">
-			<div class="c-shop-floater c-shop-floater-1">
+			<div class="c-shop-decor c-shop-decor-1">
 				${puzzleSVG({ fill: PASTELS.blue, stroke: 'transparent', top: 'flat', right: 'tab', bottom: 'tab', left: 'flat', cls: '' })}
 			</div>
-			<div class="c-shop-floater c-shop-floater-2">
+			<div class="c-shop-decor c-shop-decor-2">
 				${puzzleSVG({ fill: PASTELS.green, stroke: 'transparent', top: 'hole', right: 'flat', bottom: 'hole', left: 'tab', cls: '' })}
 			</div>
-			<div class="c-shop-floater c-shop-floater-3">
+			<div class="c-shop-decor c-shop-decor-3">
 				${puzzleSVG({ fill: PASTELS.pink, stroke: 'transparent', top: 'tab', right: 'flat', bottom: 'flat', left: 'hole', cls: '' })}
 			</div>
-			<div class="c-shop-floater c-shop-floater-4">
+			<div class="c-shop-decor c-shop-decor-4">
 				${puzzleSVG({ fill: PASTELS.blue, stroke: 'transparent', top: 'flat', right: 'tab', bottom: 'hole', left: 'flat', cls: '' })}
 			</div>
-			<div class="c-shop-floater c-shop-floater-5">
+			<div class="c-shop-decor c-shop-decor-5">
 				${puzzleSVG({ fill: PASTELS.green, stroke: 'transparent', top: 'hole', right: 'tab', bottom: 'tab', left: 'flat', cls: '' })}
+			</div>
+			<div class="c-shop-decor c-shop-decor-6">
+				${puzzleSVG({ fill: PASTELS.pink, stroke: 'transparent', top: 'hole', right: 'tab', bottom: 'hole', left: 'flat', cls: '' })}
+			</div>
+			<div class="c-shop-decor c-shop-decor-7">
+				${puzzleSVG({ fill: PASTELS.blue, stroke: 'transparent', top: 'hole', right: 'tab', bottom: 'hole', left: 'flat', cls: '' })}
+			</div>
+			<div class="c-shop-decor c-shop-decor-8">
+				${puzzleSVG({ fill: PASTELS.green, stroke: 'transparent', top: 'hole', right: 'tab', bottom: 'hole', left: 'flat', cls: '' })}
 			</div>
 			<header class="c-shop-head">
 				<div class="c-shop-title-wrap">
 					<h1 class="c-shop-title c-page-title">Shop</h1>
+					<div class="c-shop-decor c-shop-decor-title">
+						${puzzleSVG({ fill: '#FAC898', stroke: 'transparent', top: 'tab', right: 'tab', bottom: 'tab', left: 'tab', cls: '' })}
+					</div>
 				</div>
 			</header>
 			<div class="c-shop-grid"></div>

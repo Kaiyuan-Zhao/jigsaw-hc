@@ -168,14 +168,14 @@ h1, h2, h3, h4 {
 }
 
 :is(
-  .c-hero-floater,
-  .c-hero-spinner,
+  .c-hero-decor,
+  .c-hero-decor-title,
   .c-dot-bg,
   .c-principles-decor,
-  .c-principles-floater,
-  .c-creator-floater,
+  .c-principles-decor-piece,
+  .c-creator-decor,
   .c-faq-decor,
-  .c-faq-floater
+  .c-faq-decor-piece
 ) {
   z-index: 0;
 }
@@ -247,22 +247,22 @@ h1, h2, h3, h4 {
   .c-hero { padding: 128px 24px; }
 }
 
-.c-hero-floater {
+.c-hero-decor {
   position: absolute;
-  opacity: 0.55;
+  opacity: 0.85;
   mix-blend-mode: multiply;
   pointer-events: none;
 }
 
-.c-hero-floater-1 {
+.c-hero-decor-1 {
   top: 40px;
-  left: 40px;
+  left: 45px;
   width: 192px;
   height: 192px;
   animation: jigsaw-float1 5s ease-in-out infinite;
 }
 
-.c-hero-floater-2 {
+.c-hero-decor-2 {
   bottom: 40px;
   right: 40px;
   width: 256px;
@@ -270,16 +270,15 @@ h1, h2, h3, h4 {
   animation: jigsaw-float2 7s ease-in-out 1s infinite;
 }
 
-.c-hero-floater-3 {
+.c-hero-decor-3 {
   top: 140px;
   right: 16%;
   width: 120px;
   height: 120px;
-  opacity: 0.4;
   animation: jigsaw-float1 6s ease-in-out 0.4s infinite;
 }
 
-.c-hero-floater-4 {
+.c-hero-decor-4 {
   bottom: 120px;
   left: 18%;
   width: 88px;
@@ -288,16 +287,16 @@ h1, h2, h3, h4 {
   animation: jigsaw-spin 18s linear infinite;
 }
 
-.c-hero-floater-5 {
-  top: 52%;
-  left: 5%;
-  width: 76px;
-  height: 76px;
+.c-hero-decor-5 {
+  top: 55%;
+  left: 15%;
+  width: 106px;
+  height: 106px;
   opacity: 0.34;
   animation: jigsaw-spin 22s linear infinite;
 }
 
-.c-hero-floater-6 {
+.c-hero-decor-6 {
   top: 10%;
   right: 7%;
   width: 64px;
@@ -306,7 +305,7 @@ h1, h2, h3, h4 {
   animation: jigsaw-float1 5.5s ease-in-out 0.2s infinite;
 }
 
-.c-hero-floater-7 {
+.c-hero-decor-7 {
   top: 58%;
   right: 11%;
   width: 56px;
@@ -338,12 +337,12 @@ h1, h2, h3, h4 {
   margin: 0;
 }
 
-.c-hero-spinner {
+.c-hero-decor-title {
   position: absolute;
   top: -24px;
-  right: -52px;
-  width: 88px;
-  height: 88px;
+  right: -68px;
+  width: 108px;
+  height: 108px;
   animation: jigsaw-spin 20s linear infinite;
   opacity: 0.85;
 }
@@ -433,67 +432,69 @@ h1, h2, h3, h4 {
   top: 48px;
   width: 260px;
   height: 260px;
-  opacity: 0.18;
+  opacity: 0.40;
   transform: rotate(45deg);
   pointer-events: none;
+  animation: jigsaw-spin 100s linear infinite;
 }
 
-.c-principles-floater {
+.c-principles-decor-piece {
   position: absolute;
   pointer-events: none;
-  opacity: 0.35;
+  opacity: 0.5;
   mix-blend-mode: multiply;
 }
 
-.c-principles-floater-1 {
-  top: 68px;
+.c-principles-decor-piece-1 {
+  top: 40%;
   right: 54px;
-  width: 92px;
-  height: 92px;
+  width: 100px;
+  opacity: 0.7;
+  height: 100px;
   animation: jigsaw-spin 16s linear infinite;
 }
 
-.c-principles-floater-2 {
+.c-principles-decor-piece-2 {
   bottom: 180px;
   left: 64px;
   width: 104px;
   height: 104px;
+  opacity: 0.38;
   animation: jigsaw-float2 7.5s ease-in-out infinite;
 }
 
-.c-principles-floater-3 {
+.c-principles-decor-piece-3 {
   bottom: 36px;
   right: 16%;
   width: 86px;
   height: 86px;
-  opacity: 0.28;
   animation: jigsaw-float1 6s ease-in-out infinite;
 }
 
-.c-principles-floater-4 {
-  top: 210px;
+.c-principles-decor-piece-4 {
+  top: 20%;
   left: 7%;
-  width: 68px;
-  height: 68px;
-  opacity: 0.22;
-  animation: jigsaw-spin 19s linear infinite;
+  width: 150px;
+  height: 150px;
+  opacity: 0.32;
+  animation: jigsaw-float1 9s linear infinite;
 }
 
-.c-principles-floater-5 {
-  bottom: 36%;
-  left: 40%;
-  width: 58px;
-  height: 58px;
-  opacity: 0.2;
+.c-principles-decor-piece-5 {
+  bottom: 40%;
+  left: 10%;
+  width: 98px;
+  height: 98px;
+  opacity: 0.4;
   animation: jigsaw-float2 8s ease-in-out 0.6s infinite;
 }
 
-.c-principles-floater-6 {
-  top: 150px;
-  right: 26%;
-  width: 48px;
-  height: 48px;
-  opacity: 0.24;
+.c-principles-decor-piece-6 {
+  top: 10%;
+  right: 10%;
+  width: 64px;
+  height: 64px;
+  opacity: 0.35;
   animation: jigsaw-spin 17s linear infinite;
 }
 
@@ -814,22 +815,22 @@ h1, h2, h3, h4 {
   position: relative;
 }
 
-.c-creator-floater {
+.c-creator-decor {
   position: absolute;
   pointer-events: none;
-  opacity: 0.33;
+  opacity: 0.6;
   mix-blend-mode: multiply;
 }
 
-.c-creator-floater-1 {
-  top: 26px;
-  left: 5%;
-  width: 88px;
-  height: 88px;
+.c-creator-decor-1 {
+  top: 15%;
+  left: 8%;
+  width: 128px;
+  height: 128px;
   animation: jigsaw-float1 6.5s ease-in-out infinite;
 }
 
-.c-creator-floater-2 {
+.c-creator-decor-2 {
   bottom: 44px;
   right: 8%;
   width: 110px;
@@ -837,30 +838,27 @@ h1, h2, h3, h4 {
   animation: jigsaw-spin 14s linear infinite;
 }
 
-.c-creator-floater-3 {
-  top: 34%;
-  left: 1%;
-  width: 72px;
-  height: 72px;
-  opacity: 0.22;
+.c-creator-decor-3 {
+  top: 26%;
+  left: 5%;
+  width: 102px;
+  height: 102px;
   animation: jigsaw-spin 20s linear infinite;
 }
 
-.c-creator-floater-4 {
-  bottom: 16%;
+.c-creator-decor-4 {
+  bottom: 10%;
   left: 20%;
   width: 62px;
   height: 62px;
-  opacity: 0.2;
   animation: jigsaw-float2 7s ease-in-out infinite;
 }
 
-.c-creator-floater-5 {
+.c-creator-decor-5 {
   top: 10%;
-  right: 2%;
-  width: 52px;
-  height: 52px;
-  opacity: 0.24;
+  right: 12%;
+  width: 102px;
+  height: 102px;
   animation: jigsaw-spin 24s linear infinite;
 }
 
@@ -1309,25 +1307,22 @@ h1, h2, h3, h4 {
   overflow: hidden;
 }
 
-.c-faq-decor {
-  position: absolute;
-  top: 80px;
-  left: 80px;
-  width: 192px;
-  height: 192px;
-  opacity: 0.30;
-  transform: rotate(-12deg);
-  pointer-events: none;
-}
-
-.c-faq-floater {
+.c-faq-decor-piece {
   position: absolute;
   pointer-events: none;
-  opacity: 0.28;
+  opacity: 0.8;
   mix-blend-mode: multiply;
 }
 
-.c-faq-floater-1 {
+.c-faq-decor-piece-0 {
+  top: 10%;
+  left: 10%;
+  width: 120px;
+  height: 120px;
+  animation: jigsaw-spin 90s linear infinite;
+}
+
+.c-faq-decor-piece-1 {
   top: 120px;
   right: 78px;
   width: 90px;
@@ -1335,38 +1330,37 @@ h1, h2, h3, h4 {
   animation: jigsaw-float2 6.8s ease-in-out 0.5s infinite;
 }
 
-.c-faq-floater-2 {
-  bottom: 56px;
-  left: 56px;
+.c-faq-decor-piece-2 {
+  top: 10%;
+  left: 5%;
   width: 72px;
   height: 72px;
   animation: jigsaw-spin 15s linear infinite;
 }
 
-.c-faq-floater-3 {
+.c-faq-decor-piece-3 {
   top: 52px;
   right: 10%;
   width: 58px;
   height: 58px;
-  opacity: 0.22;
   animation: jigsaw-spin 21s linear infinite;
 }
 
-.c-faq-floater-4 {
-  bottom: 120px;
-  right: 12%;
+.c-faq-decor-piece-4 {
+  top: 10%;
+  right: 38%;
   width: 78px;
   height: 78px;
-  opacity: 0.2;
+  opacity: 0.3;
   animation: jigsaw-float1 6.2s ease-in-out infinite;
 }
 
-.c-faq-floater-5 {
-  bottom: 26%;
-  left: 5%;
+.c-faq-decor-piece-5 {
+  top: 20%;
+  left: 40%;
   width: 50px;
   height: 50px;
-  opacity: 0.22;
+  opacity: 0.5s;
   animation: jigsaw-spin 16s linear infinite;
 }
 
@@ -1452,13 +1446,59 @@ h1, h2, h3, h4 {
    ============================================================ */
 
 .c-arcade-gallery-page {
+  position: relative;
   min-height: 100vh;
   padding: 52px 20px 80px;
+  overflow: hidden;
+}
+
+.c-arcade-gallery-decor {
+  position: absolute;
+  opacity: 0.52;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.c-arcade-gallery-decor-1 {
+  top: 58px;
+  left: 150px;
+  width: 104px;
+  height: 104px;
+  animation: jigsaw-float1 6.2s ease-in-out infinite;
+}
+
+.c-arcade-gallery-decor-2 {
+  top: 90px;
+  right: 3%;
+  width: 128px;
+  height: 128px;
+  animation: jigsaw-float2 8s ease-in-out 0.7s infinite;
+}
+
+.c-arcade-gallery-decor-3 {
+  top: 18%;
+  right: 10%;
+  width: 164px;
+  height: 164px;
+  opacity: 0.3;
+  animation: jigsaw-spin 20s linear infinite;
+}
+
+.c-arcade-gallery-decor-4 {
+  top: 52%;
+  left: 4%;
+  width: 78px;
+  height: 78px;
+  opacity: 0.58;
+  animation: jigsaw-spin 24s linear infinite;
 }
 
 .c-arcade-gallery-inner {
   max-width: 1120px;
   margin: 0 auto;
+  position: relative;
+  z-index: 5;
 }
 
 .c-arcade-gallery-head {
@@ -1471,6 +1511,11 @@ h1, h2, h3, h4 {
   font-size: clamp(2.4rem, 7.2vw, 5.1rem);
   text-transform: uppercase;
   color: var(--c-ink);
+}
+
+.c-arcade-gallery-title-wrap {
+  display: inline-block;
+  position: relative;
 }
 
 .c-arcade-gallery-subtitle {
@@ -1887,53 +1932,87 @@ h1, h2, h3, h4 {
   position: relative;
 }
 
-.c-shop-floater {
+.c-shop-decor {
   position: absolute;
-  opacity: 0.34;
+  opacity: 0.6;
   mix-blend-mode: multiply;
   pointer-events: none;
 }
 
-.c-shop-floater-1 {
-  top: 56px;
+.c-shop-decor-1 {
+  top: 64px;
   left: 18px;
-  width: 110px;
-  height: 110px;
+  width: 96px;
+  height: 96px;
   animation: jigsaw-float1 6s ease-in-out infinite;
 }
 
-.c-shop-floater-2 {
-  top: 100px;
-  right: 6%;
-  width: 138px;
-  height: 138px;
+.c-shop-decor-2 {
+  top: 112px;
+  right: 3%;
+  width: 120px;
+  height: 120px;
   animation: jigsaw-float2 8s ease-in-out 0.6s infinite;
 }
 
-.c-shop-floater-3 {
-  top: 42%;
+.c-shop-decor-3 {
+  top: 25%;
   left: 4%;
-  width: 82px;
-  height: 82px;
-  opacity: 0.28;
+  width: 100px;
+  height: 100px;
+  opacity: 0.4;
   animation: jigsaw-spin 24s linear infinite;
 }
 
-.c-shop-floater-4 {
-  bottom: 8%;
-  right: 5%;
-  width: 96px;
-  height: 96px;
-  opacity: 0.26;
+.c-shop-decor-4 {
+  bottom: 7%;
+  right: 3%;
+  width: 182px;
+  height: 182px;
+  opacity: 0.8;
   animation: jigsaw-float1 7.5s ease-in-out 0.3s infinite;
 }
 
-.c-shop-floater-5 {
-  bottom: 16%;
-  left: 12%;
-  width: 72px;
-  height: 72px;
-  opacity: 0.22;
+.c-shop-decor-5 {
+  bottom: 18%;
+  right: 10%;
+  width: 62px;
+  height: 62px;
+  opacity: 0.9;
+  animation: jigsaw-spin 10s linear infinite;
+}
+.c-shop-decor-6 {
+  bottom: 15%;
+  right: 25%;
+  width: 122px;
+  height: 122px;
+  opacity: 0.6;
+  animation: jigsaw-spin 15s linear infinite;
+}
+
+.c-shop-decor-7 {
+  top: 45%;
+  right: 4%;
+  width: 100px;
+  height: 100px;
+  opacity: 0.6;
+  animation: jigsaw-float1 4s linear infinite;
+}
+.c-shop-decor-8 {
+  top: 60%;
+  left: 4%;
+  width: 80px;
+  height: 80px;
+  opacity: 0.7;
+  animation: jigsaw-spin 12s linear infinite;
+}
+
+.c-shop-decor-title {
+  top: -14px;
+  right: -40px;
+  width: 62px;
+  height: 62px;
+  opacity: 0.5;
   animation: jigsaw-spin 20s linear infinite;
 }
 

@@ -204,9 +204,23 @@ function buildGalleryCards(auth: AuthMeResponse | null, byPuzzleId: Record<strin
 function buildArcadePage(auth: AuthMeResponse | null, byPuzzleId: Record<string, UpvoteState>): HTMLElement {
   return htmlToElement(`
 <section class="c-arcade-gallery-page">
+  <div class="c-arcade-gallery-decor c-arcade-gallery-decor-1">
+    ${puzzleSVG({ fill: ARCADE_PASTEL_COLORS[0], stroke: 'transparent', top: 'flat', right: 'tab', bottom: 'tab', left: 'flat', cls: '' })}
+  </div>
+  <div class="c-arcade-gallery-decor c-arcade-gallery-decor-2">
+    ${puzzleSVG({ fill: ARCADE_PASTEL_COLORS[1], stroke: 'transparent', top: 'hole', right: 'flat', bottom: 'hole', left: 'tab', cls: '' })}
+  </div>
+  <div class="c-arcade-gallery-decor c-arcade-gallery-decor-3">
+    ${puzzleSVG({ fill: ARCADE_PASTEL_COLORS[2], stroke: 'transparent', top: 'tab', right: 'flat', bottom: 'flat', left: 'hole', cls: '' })}
+  </div>
+  <div class="c-arcade-gallery-decor c-arcade-gallery-decor-4">
+    ${puzzleSVG({ fill: ARCADE_PASTEL_COLORS[2], stroke: 'transparent', top: 'flat', right: 'tab', bottom: 'hole', left: 'tab', cls: '' })}
+  </div>
   <div class="c-arcade-gallery-inner">
     <header class="c-arcade-gallery-head">
-      <h1 class="c-arcade-gallery-title c-page-title">Arcade Gallery</h1>
+      <div class="c-arcade-gallery-title-wrap">
+        <h1 class="c-arcade-gallery-title c-page-title">Arcade Gallery</h1>
+      </div>
       <p class="c-arcade-upvote-status" aria-live="polite"></p>
       <a href="/" class="c-arcade-back-link">Back to Home</a>
     </header>

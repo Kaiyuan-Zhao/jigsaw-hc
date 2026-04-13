@@ -91,33 +91,27 @@ function puzzleEl(fill: string, notch: Notch, stroke = '#111827', strokeWidth?: 
 function buildHero(): HTMLElement {
   return htmlToElement(`
 <section class="c-hero c-puzzle-border c-section-shell">
-  <div class="c-hero-floater c-hero-floater-1">
+  <div class="c-hero-decor c-hero-decor-1">
     ${puzzleEl(PASTELS.blue, { top: 'flat', right: 'tab', bottom: 'tab', left: 'flat' }, 'transparent')}
   </div>
-  <div class="c-hero-floater c-hero-floater-2">
+  <div class="c-hero-decor c-hero-decor-2">
     ${puzzleEl(PASTELS.green, { top: 'hole', right: 'flat', bottom: 'hole', left: 'tab' }, 'transparent')}
   </div>
-  <div class="c-hero-floater c-hero-floater-3">
+   <div class="c-hero-decor c-hero-decor-3">
     ${puzzleEl(PASTELS.pink, { top: 'tab', right: 'flat', bottom: 'flat', left: 'hole' }, 'transparent')}
   </div>
-  <div class="c-hero-floater c-hero-floater-4">
-    ${puzzleEl(PASTELS.yellow, { top: 'flat', right: 'tab', bottom: 'hole', left: 'flat' }, 'transparent')}
-  </div>
-  <div class="c-hero-floater c-hero-floater-5">
+  <div class="c-hero-decor c-hero-decor-5">
     ${puzzleEl('#ffdfba', { top: 'hole', right: 'tab', bottom: 'tab', left: 'flat' }, 'transparent')}
   </div>
-  <div class="c-hero-floater c-hero-floater-6">
+  <div class="c-hero-decor c-hero-decor-6">
     ${puzzleEl(PASTELS.blue, { top: 'tab', right: 'flat', bottom: 'hole', left: 'hole' }, 'transparent')}
-  </div>
-  <div class="c-hero-floater c-hero-floater-7" aria-hidden="true">
-    ${puzzleSVG({ fill: '#FAC898', stroke: '', top: 'tab', right: 'tab', bottom: 'tab', left: 'tab', cls: '' })}
   </div>
 
   <div class="c-hero-content">
     <div class="c-hero-title-wrap">
       <h1 class="c-hero-title">Jigsaw</h1>
-      <div class="c-hero-spinner">
-        ${puzzleSVG({ fill: '#ffdfba', stroke: '', top: 'tab', right: 'tab', bottom: 'tab', left: 'tab', cls: '' })}
+      <div class="c-hero-decor c-hero-decor-title">
+        ${puzzleSVG({ fill: '#FAC898', stroke: '', top: 'tab', right: 'tab', bottom: 'tab', left: 'tab', cls: '' })}
       </div>
     </div>
     <p class="c-hero-subtitle">Ship puzzles, solve puzzles, win puzzles!</p>
@@ -214,25 +208,25 @@ function buildPrinciples(): HTMLElement {
 <section class="c-principles c-arcade-stage-section c-puzzle-border c-section-shell" data-ui-hook="arcade-stage-section">
   <div class="c-dot-bg"></div>
   <div class="c-principles-decor">
-    ${puzzleEl('#FAC898', { top: 'tab', right: 'tab', bottom: 'tab', left: 'tab' }, 'transparent')}
+    ${puzzleEl(PASTELS.pink, { top: 'tab', right: 'tab', bottom: 'tab', left: 'tab' }, 'transparent')}
   </div>
-  <div class="c-principles-floater c-principles-floater-1">
-    ${puzzleEl('#ffdfba', { top: 'hole', right: 'tab', bottom: 'flat', left: 'flat' }, 'transparent')}
+  <div class="c-principles-decor-piece c-principles-decor-piece-1">
+    ${puzzleEl(PASTELS.green, { top: 'hole', right: 'tab', bottom: 'flat', left: 'flat' }, 'transparent')}
   </div>
-  <div class="c-principles-floater c-principles-floater-2">
-    ${puzzleEl(PASTELS.green, { top: 'flat', right: 'flat', bottom: 'tab', left: 'hole' }, 'transparent')}
+  <div class="c-principles-decor-piece c-principles-decor-piece-2">
+    ${puzzleEl(PASTELS.pink, { top: 'flat', right: 'flat', bottom: 'tab', left: 'hole' }, 'transparent')}
   </div>
-  <div class="c-principles-floater c-principles-floater-3">
-    ${puzzleEl(PASTELS.pink, { top: 'tab', right: 'hole', bottom: 'flat', left: 'flat' }, 'transparent')}
+  <div class="c-principles-decor-piece c-principles-decor-piece-3">
+    ${puzzleEl(PASTELS.green, { top: 'tab', right: 'hole', bottom: 'flat', left: 'flat' }, 'transparent')}
   </div>
-  <div class="c-principles-floater c-principles-floater-4">
+  <div class="c-principles-decor-piece c-principles-decor-piece-4">
     ${puzzleEl(PASTELS.blue, { top: 'flat', right: 'tab', bottom: 'hole', left: 'tab' }, 'transparent')}
   </div>
-  <div class="c-principles-floater c-principles-floater-5">
-    ${puzzleEl(PASTELS.yellow, { top: 'hole', right: 'flat', bottom: 'tab', left: 'tab' }, 'transparent')}
+  <div class="c-principles-decor-piece c-principles-decor-piece-5">
+    ${puzzleEl(PASTELS.blue, { top: 'hole', right: 'flat', bottom: 'tab', left: 'tab' }, 'transparent')}
   </div>
-  <div class="c-principles-floater c-principles-floater-6" aria-hidden="true">
-    ${puzzleSVG({ fill: '#ffdfba', stroke: '', top: 'tab', right: 'tab', bottom: 'tab', left: 'tab', cls: '' })}
+  <div class="c-principles-decor-piece c-principles-decor-piece-6" aria-hidden="true">
+    ${puzzleSVG({ fill: PASTELS.pink, stroke: '', top: 'tab', right: 'tab', bottom: 'tab', left: 'tab', cls: '' })}
   </div>
   <div class="c-principles-inner">
     <div class="c-section-header">
@@ -263,20 +257,20 @@ function buildCreator(): HTMLElement {
   const rewards = buildCreatorRewards()
   return htmlToElement(`
 <section class="c-creator c-puzzle-border c-section-shell">
-    <div class="c-creator-floater c-creator-floater-1">
+    <div class="c-creator-decor c-creator-decor-1">
       ${puzzleEl(PASTELS.blue, { top: 'tab', right: 'hole', bottom: 'flat', left: 'flat' }, 'transparent')}
     </div>
-    <div class="c-creator-floater c-creator-floater-2">
+    <div class="c-creator-decor c-creator-decor-2">
       ${puzzleEl(PASTELS.pink, { top: 'flat', right: 'tab', bottom: 'tab', left: 'flat' }, 'transparent')}
     </div>
-    <div class="c-creator-floater c-creator-floater-3">
-      ${puzzleEl(PASTELS.yellow, { top: 'tab', right: 'flat', bottom: 'flat', left: 'hole' }, 'transparent')}
+    <div class="c-creator-decor c-creator-decor-3">
+      ${puzzleEl(PASTELS.pink, { top: 'tab', right: 'flat', bottom: 'flat', left: 'hole' }, 'transparent')}
     </div>
-    <div class="c-creator-floater c-creator-floater-4">
+    <div class="c-creator-decor c-creator-decor-4">
       ${puzzleEl(PASTELS.green, { top: 'hole', right: 'tab', bottom: 'hole', left: 'flat' }, 'transparent')}
     </div>
-    <div class="c-creator-floater c-creator-floater-5" aria-hidden="true">
-      ${puzzleSVG({ fill: '#ffdfba', stroke: '', top: 'tab', right: 'tab', bottom: 'tab', left: 'tab', cls: '' })}
+    <div class="c-creator-decor c-creator-decor-5" aria-hidden="true">
+      ${puzzleSVG({ fill: PASTELS.green, stroke: '', top: 'tab', right: 'tab', bottom: 'tab', left: 'tab', cls: '' })}
     </div>
     ${rewards}
     <div class="c-creator-conveyor" aria-label="Shop prizes preview">
@@ -422,22 +416,19 @@ function buildFAQ(): HTMLElement {
 
   return htmlToElement(`
 <section class="c-faq c-section-shell">
-  <div class="c-faq-decor">
-    ${puzzleEl(PASTELS.blue, { top: 'flat', right: 'tab', bottom: 'flat', left: 'tab' }, 'transparent')}
+  <div class="c-faq-decor-piece c-faq-decor-piece-0">
+    ${puzzleEl('#ffdfba', { top: 'flat', right: 'tab', bottom: 'flat', left: 'tab' }, 'transparent')}
   </div>
-  <div class="c-faq-floater c-faq-floater-1">
+  <div class="c-faq-decor-piece c-faq-decor-piece-1">
     ${puzzleEl(PASTELS.yellow, { top: 'tab', right: 'flat', bottom: 'hole', left: 'flat' }, 'transparent')}
   </div>
-  <div class="c-faq-floater c-faq-floater-2">
-    ${puzzleEl('#ffdfba', { top: 'flat', right: 'hole', bottom: 'flat', left: 'tab' }, 'transparent')}
-  </div>
-  <div class="c-faq-floater c-faq-floater-3">
+  <div class="c-faq-decor-piece c-faq-decor-piece-3">
     ${puzzleEl(PASTELS.green, { top: 'tab', right: 'tab', bottom: 'flat', left: 'flat' }, 'transparent')}
   </div>
-  <div class="c-faq-floater c-faq-floater-4">
+  <div class="c-faq-decor-piece c-faq-decor-piece-4">
     ${puzzleEl(PASTELS.pink, { top: 'flat', right: 'flat', bottom: 'tab', left: 'tab' }, 'transparent')}
   </div>
-  <div class="c-faq-floater c-faq-floater-5" aria-hidden="true">
+  <div class="c-faq-decor-piece c-faq-decor-piece-5" aria-hidden="true">
     ${puzzleSVG({ fill: PASTELS.blue, stroke: '', top: 'tab', right: 'tab', bottom: 'tab', left: 'tab', cls: '' })}
   </div>
   <div class="c-faq-inner">
