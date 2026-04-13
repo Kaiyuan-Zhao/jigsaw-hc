@@ -187,7 +187,7 @@ function buildArcadeEngageHtml(): string {
           </div>
           <div class="c-creator-rewards-engage-item">
             <div class="c-creator-rewards-engage-icon" aria-hidden="true">${starLarge}</div>
-            <p class="c-creator-rewards-engage-line">Your puzzle solved = +1🧩</p>
+            <p class="c-creator-rewards-engage-line">Your puzzle solved = +1 🧩</p>
           </div>
         </div>
       </div>`;
