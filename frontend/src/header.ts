@@ -9,9 +9,9 @@ export function buildSiteHeader(): HTMLElement {
 			<div class="c-site-header-inner">
 				<a class="c-site-logo" href="/">Jigsaw</a>
 				<nav class="c-site-nav" aria-label="Primary">
-					<a class="c-site-nav-link" href="/">Home</a>
-					<a class="c-site-nav-link" href="/arcade">Arcade</a>
-					<a class="c-site-nav-link" href="/shop">Shop</a>
+					<a class="c-site-nav-link c-site-nav-link--home" href="/">Home</a>
+					<a class="c-site-nav-link c-site-nav-link--arcade" href="/arcade">Arcade</a>
+					<a class="c-site-nav-link c-site-nav-link--shop" href="/shop">Shop</a>
 				</nav>
 				<div class="c-site-auth"></div>
 			</div>

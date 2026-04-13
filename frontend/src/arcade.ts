@@ -8,14 +8,17 @@ import type { UserPuzzleCard } from './types/arcade'
 type Notch = { top: EdgeType; right: EdgeType; bottom: EdgeType; left: EdgeType }
 
 const ARCADE_PASTEL_COLORS = PASTEL_COLORS
-const HERO_THUMB = new URL('./assets/vite.svg', import.meta.url).href
+const ICON_GAME_OF_GODS = new URL('./assets/arcade_thumbnails/angel.jpg', import.meta.url).href
+const ICON_HIDDEN_VAULT = new URL('./assets/arcade_thumbnails/hidden-vault.svg', import.meta.url).href
+const ICON_GHOST_PROTOCOL = new URL('./assets/arcade_thumbnails/ghost-protocol.svg', import.meta.url).href
+const ICON_PIECE_PLATFORMER = new URL('./assets/arcade_thumbnails/piece-platformer.svg', import.meta.url).href
 
 const USER_PUZZLES: UserPuzzleCard[] = [
   // Set creatorUserId to the Hack Club OpenID user ID to pre-disable self-like.
-  { puzzleId: 'game-of-gods', title: 'Game of Gods', author: 'by Ken Zhao', genre: 'LLM Logic Puzzle', thumbnail: new URL('./assets/arcade_thumbnails/angel.jpg', import.meta.url).href, baseLikes: 0, gameUrl: 'https://game-of-gods.vercel.app/' },
-  { puzzleId: 'hidden-vault', title: 'Hidden Vault', author: 'by @ctf_master', genre: 'CTF-style challenge', thumbnail: HERO_THUMB, baseLikes: 2 },
-  { puzzleId: 'ghost-protocol', title: 'Ghost Protocol', author: 'by @arg_enthusiast', genre: 'ARG site', thumbnail: HERO_THUMB, baseLikes: 16 },
-  { puzzleId: 'piece-platformer', title: 'Piece Platformer', author: 'by @retro_kid', genre: 'Retro puzzle game', thumbnail: HERO_THUMB, baseLikes: 5 },
+  { puzzleId: 'game-of-gods', title: 'Game of Gods', author: 'by Ken Zhao', genre: 'LLM Logic Puzzle', thumbnail: ICON_GAME_OF_GODS, baseLikes: 0, gameUrl: 'https://game-of-gods.vercel.app/' },
+  { puzzleId: 'hidden-vault', title: 'Hidden Vault', author: 'by @ctf_master', genre: 'CTF-style challenge', thumbnail: ICON_HIDDEN_VAULT, baseLikes: 2 },
+  { puzzleId: 'ghost-protocol', title: 'Ghost Protocol', author: 'by @arg_enthusiast', genre: 'ARG site', thumbnail: ICON_GHOST_PROTOCOL, baseLikes: 16 },
+  { puzzleId: 'piece-platformer', title: 'Piece Platformer', author: 'by @retro_kid', genre: 'Retro puzzle game', thumbnail: ICON_PIECE_PLATFORMER, baseLikes: 5 },
 ]
 
 const HEART_ICON_PATH =

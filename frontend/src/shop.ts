@@ -150,8 +150,17 @@ function setAffordPieceOutlines(refs: ShopCardRefs, balance: number): void {
 	}
 }
 
+function setCardAffordabilityVisual(refs: ShopCardRefs, balance: number): void {
+	const canAfford = balance >= refs.item.pricePieces
+	const lockPaths = refs.card.querySelectorAll<SVGPathElement>('[data-lock-path="1"]')
+	for (const path of lockPaths) {
+		path.setAttribute('stroke-dasharray', canAfford ? '1.2 8.6' : '0.7 3.2')
+	}
+}
+
 function updateAffordProgress(cards: ShopCardRefs[], balance: number): void {
 	for (const refs of cards) {
+		setCardAffordabilityVisual(refs, balance)
 		setAffordPieceOutlines(refs, balance)
 	}
 }
@@ -414,15 +423,6 @@ export function initShop(root: HTMLElement): void {
 			</div>
 			<div class="c-shop-decor c-shop-decor-5">
 				${puzzleSVG({ fill: PASTELS.green, stroke: 'transparent', top: 'hole', right: 'tab', bottom: 'tab', left: 'flat', cls: '' })}
-			</div>
-			<div class="c-shop-decor c-shop-decor-6">
-				${puzzleSVG({ fill: PASTELS.pink, stroke: 'transparent', top: 'hole', right: 'tab', bottom: 'hole', left: 'flat', cls: '' })}
-			</div>
-			<div class="c-shop-decor c-shop-decor-7">
-				${puzzleSVG({ fill: PASTELS.blue, stroke: 'transparent', top: 'hole', right: 'tab', bottom: 'hole', left: 'flat', cls: '' })}
-			</div>
-			<div class="c-shop-decor c-shop-decor-8">
-				${puzzleSVG({ fill: PASTELS.green, stroke: 'transparent', top: 'hole', right: 'tab', bottom: 'hole', left: 'flat', cls: '' })}
 			</div>
 			<header class="c-shop-head">
 				<div class="c-shop-title-wrap">

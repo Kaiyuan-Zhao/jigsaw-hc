@@ -142,7 +142,7 @@ export function buildOverlaySvg(
 			const d = buildPuzzlePath(edges.top, edges.right, edges.bottom, edges.left, 50)
 			const transform = `translate(${col * cell} ${row * cell}) scale(${s})`
 			lockPaths.push(
-				`<path d="${d}" transform="${transform}" fill="${lockFill}" stroke="${lockStroke}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="1.2 8.6" pathLength="100" paint-order="fill stroke"/>`
+				`<path data-lock-path="1" d="${d}" transform="${transform}" fill="${lockFill}" stroke="${lockStroke}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="1.2 8.6" pathLength="100" paint-order="fill stroke"/>`
 			)
 			vividPaths.push(
 				`<path d="${d}" transform="${transform}" fill="${vividFill}" stroke="${vividStroke}" stroke-width="3" stroke-linejoin="round" paint-order="stroke fill"/>`
