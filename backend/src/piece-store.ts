@@ -37,6 +37,7 @@ const SHOP_CATALOG = [
 	{ id: 'puzzlewarehouse-giftcard-10', pricePieces: 360, title: 'PuzzleWarehouse $10 Gift Card' },
 	{ id: 'puzzlewarehouse-giftcard-15', pricePieces: 450, title: 'PuzzleWarehouse $15 Gift Card' },
 	{ id: 'puzzlewarehouse-giftcard-25', pricePieces: 720, title: 'PuzzleWarehouse $25 Gift Card' },
+	{ id: 'steam-giftcard-10', pricePieces: 380, title: 'Steam $10 Gift Card' },
 	{ id: 'storyteller', pricePieces: 540, title: 'Storyteller (Steam)' },
 	{ id: 'bento-blocks', pricePieces: 450, title: 'Bento Blocks (Steam)' },
 	{ id: 'superliminal', pricePieces: 640, title: 'Superliminal (Steam)' },

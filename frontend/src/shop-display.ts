@@ -12,7 +12,7 @@ const OVERLAY_VB = 320
 
 const IMG_PUZZLEWAREHOUSE_10 = new URL('./assets/shop/puzzlewarehouse-giftcard-10.svg', import.meta.url).href
 const IMG_PUZZLEWAREHOUSE_15 = new URL('./assets/shop/puzzlewarehouse-giftcard-15.svg', import.meta.url).href
-const IMG_PUZZLEWAREHOUSE_25 = new URL('./assets/shop/puzzlewarehouse-giftcard-25.svg', import.meta.url).href
+const IMG_STEAM_GIFTCARD_10 = new URL('./assets/shop/steam-giftcard-10.jpg', import.meta.url).href
 const IMG_STORYTELLER = new URL('./assets/shop/storyteller.jpg', import.meta.url).href
 const IMG_BENTO_BLOCKS = new URL('./assets/shop/bento-blocks.jpg', import.meta.url).href
 const IMG_SUPERLIMINAL = new URL('./assets/shop/superliminal.jpg', import.meta.url).href
@@ -38,11 +38,11 @@ export const SHOP_ITEMS: readonly ShopDisplayItem[] = [
 		blurb: 'Gift card from PuzzleWarehouse.',
 	},
 	{
-		id: 'puzzlewarehouse-giftcard-25',
-		title: 'PuzzleWarehouse $25 Gift Card',
-		image: IMG_PUZZLEWAREHOUSE_25,
-		pricePieces: 720,
-		blurb: 'Gift card from PuzzleWarehouse.',
+		id: 'steam-giftcard-10',
+		title: 'Steam $10 Gift Card',
+		image: IMG_STEAM_GIFTCARD_10,
+		pricePieces: 380,
+		blurb: 'Steam Wallet gift card reward option.',
 	},
 	{
 		id: 'storyteller',
