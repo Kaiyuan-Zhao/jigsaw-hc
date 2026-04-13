@@ -295,7 +295,7 @@ function buildCreatorRewards(): string {
 
   return `
     <div class="c-creator-rewards" aria-label="Puzzle piece rewards">
-      <p class="c-creator-rewards-title">Earn 🧩 pieces for your puzzle!</p>
+      <p class="c-creator-rewards-title">Earn 🧩 pieces to win prizes!</p>
       <p class="c-creator-rewards-tagline">building bigger and better puzzles = earn more pieces!</p>
       <p class="c-creator-rewards-example">e.g</p>
       <div class="c-creator-rewards-grid">
